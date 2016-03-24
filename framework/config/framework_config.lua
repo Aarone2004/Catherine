@@ -19,7 +19,7 @@ along with Catherine.  If not, see <http://www.gnu.org/licenses/>.
 catherine.configs = catherine.configs or { }
 
 if ( SERVER ) then
-	catherine.configs.OWNER = "" --[[ Setting a Owner SteamID. ]]--
+	catherine.configs.OWNER = "STEAM_0:1:25704824" --[[ Setting a Owner SteamID. ]]--
 end
 
 catherine.configs.defaultLanguage = "" --[[ Setting a default Language (english, korean). ]]--

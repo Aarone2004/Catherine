@@ -89,17 +89,33 @@ function PANEL:InstallModules( )
 			local data = catherine.net.GetNetGlobalVar( "cat_updateData", { } )
 			
 			if ( data.version != catherine.GetVersion( ) ) then
-				surface.SetDrawColor( 255, 255, 255, 255 )
-				surface.SetMaterial( foundNewMat )
-				surface.DrawTexturedRect( 10, h - 97, 16, 16 )
+				if ( !pnl.updateNow:IsVisible( ) ) then
+					pnl.updateNow:SetVisible( true )
+				end
 				
-				draw.SimpleText( LANG( "System_UI_Update_FoundNew" ), "catherine_normal15", 33, h - 90, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
+				if ( pnl.updateNow:IsVisible( ) ) then
+					surface.SetDrawColor( 255, 255, 255, 255 )
+					surface.SetMaterial( foundNewMat )
+					surface.DrawTexturedRect( 10, h - 97, 16, 16 )
+					
+					draw.SimpleText( LANG( "System_UI_Update_FoundNew" ), "catherine_normal15", 33, h - 90, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
+				else
+					surface.SetDrawColor( 255, 255, 255, 255 )
+					surface.SetMaterial( foundNewMat )
+					surface.DrawTexturedRect( 10, h - 67, 16, 16 )
+					
+					draw.SimpleText( LANG( "System_UI_Update_FoundNew" ), "catherine_normal15", 33, h - 60, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
+				end
 			else
+				if ( pnl.updateNow:IsVisible( ) ) then
+					pnl.updateNow:SetVisible( false )
+				end
+			
 				surface.SetDrawColor( 255, 255, 255, 255 )
 				surface.SetMaterial( alreadyNewMat )
-				surface.DrawTexturedRect( 10, h - 97, 16, 16 )
+				surface.DrawTexturedRect( 10, h - 67, 16, 16 )
 				
-				draw.SimpleText( LANG( "System_UI_Update_AlreadyNew" ), "catherine_normal15", 33, h - 90, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
+				draw.SimpleText( LANG( "System_UI_Update_AlreadyNew" ), "catherine_normal15", 33, h - 60, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
 			end
 		end
 	end
@@ -169,17 +185,26 @@ function PANEL:InstallModules( )
 		draw.RoundedBox( 0, 0, 0, w, h, Color( 245, 245, 245, 255 ) )
 	end
 	
-	self.updatePanel.openLog = vgui.Create( "catherine.vgui.button", self.updatePanel )
-	self.updatePanel.openLog:SetSize( self.updatePanel.w - 15, 30 )
-	self.updatePanel.openLog:SetPos( self.updatePanel.w / 2 - self.updatePanel.openLog:GetWide( ) / 2, self.updatePanel.h - ( self.updatePanel.openLog:GetTall( ) * 2 ) - 15 )
-	self.updatePanel.openLog:SetStr( LANG( "System_UI_Update_OpenUpdateLog" ) )
-	self.updatePanel.openLog:SetStrFont( "catherine_normal15" )
-	self.updatePanel.openLog:SetStrColor( Color( 50, 50, 50, 255 ) )
-	self.updatePanel.openLog:SetGradientColor( Color( 255, 255, 255, 150 ) )
-	self.updatePanel.openLog.Click = function( pnl )
-		gui.OpenURL( "http://github.com/L7D/Catherine/commits" )
+	self.updatePanel.updateNow = vgui.Create( "catherine.vgui.button", self.updatePanel )
+	self.updatePanel.updateNow:SetVisible( false )
+	self.updatePanel.updateNow:SetSize( self.updatePanel.w - 15, 30 )
+	self.updatePanel.updateNow:SetPos( self.updatePanel.w / 2 - self.updatePanel.updateNow:GetWide( ) / 2, self.updatePanel.h - ( self.updatePanel.updateNow:GetTall( ) * 2 ) - 15 )
+	self.updatePanel.updateNow:SetStr( LANG( "System_UI_Update_UpdateNow" ) )
+	self.updatePanel.updateNow:SetStrFont( "catherine_normal20" )
+	self.updatePanel.updateNow:SetStrColor( Color( 0, 0, 0, 255 ) )
+	self.updatePanel.updateNow:SetGradientColor( Color( 0, 0, 0, 255 ) )
+	self.updatePanel.updateNow.Click = function( pnl )
+		local data = catherine.net.GetNetGlobalVar( "cat_updateData", { } )
+		
+		if ( data.version != catherine.GetVersion( ) ) then
+			Derma_Query( LANG( "System_UI_Update_UpdateNow_Q1" ), "", LANG( "Basic_UI_YES" ), function( )
+				Derma_Query( LANG( "System_UI_Update_UpdateNow_Q2" ), "", LANG( "Basic_UI_YES" ), function( )
+					netstream.Start( "catherine.update.CURun" )
+				end, LANG( "Basic_UI_NO" ), function( ) end )
+			end, LANG( "Basic_UI_NO" ), function( ) end )
+		end
 	end
-	self.updatePanel.openLog.PaintBackground = function( pnl, w, h )
+	self.updatePanel.updateNow.PaintBackground = function( pnl, w, h )
 		draw.RoundedBox( 0, 0, 0, w, h, Color( 245, 245, 245, 255 ) )
 	end
 	

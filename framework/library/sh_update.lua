@@ -19,6 +19,8 @@ along with Catherine.  If not, see <http://www.gnu.org/licenses/>.
 catherine.update = catherine.update or { }
 
 if ( SERVER ) then
+	require( "fileio" )
+	
 	catherine.update.checked = catherine.update.checked or false
 	
 	function catherine.update.Check( pl, noCoolTime )
@@ -74,6 +76,410 @@ if ( SERVER ) then
 			end
 		end
 	end
+	//catherine.update.StartUpdateMode( player.GetByID(1) )
+	function catherine.update.StartUpdateMode( pl )
+		catherine.UpdateModeReboot( pl )
+	end
+	
+	function catherine.update.StartUpdate( pl )
+		catherine.update.running = true
+		local updatemode_data1 = string.Explode( "\n", file.Read( "catherine/updatemode_data.txt", "DATA" ) or "" )
+		local updatemode_data2 = string.Explode( "\n", file.Read( "catherine/updatemode.txt", "DATA" ) or "" )
+		
+		catherine.update.SendUpdatePercent( pl, 1 )
+		catherine.update.SendConsoleMessage( pl, "업데이트 정보를 가져오는 중 입니다 ..." )
+		
+		http.Fetch( "http://textuploader.com/5nmp8/raw",
+			function( body )
+				if ( body:find( "Error 404</p>" ) ) then
+					MsgC( Color( 255, 0, 0 ), "[CAT Update ERROR] Failed to checking update! [404 ERROR]\n" )
+					return
+				end
+				
+				if ( body:find( "<!DOCTYPE HTML>" ) or body:find( "<title>Textuploader.com" ) ) then
+					MsgC( Color( 255, 0, 0 ), "[CAT Update ERROR] Failed to checking update! [Unknown ERROR]\n" )
+					return
+				end
+				
+				local updateData = util.JSONToTable( body )
+				
+				if ( updateData and istable( updateData ) ) then
+					if ( updateData.newVer and updateData.newVer != catherine.GetVersion( ) ) then
+						catherine.update.SendUpdatePercent( pl, 2 )
+						catherine.update.SendConsoleMessage( pl, "업데이트 정보를 가져왔습니다, " .. updateData.newVer .. " 버전으로 업데이트를 시작합니다." )
+						catherine.update.SendConsoleMessage( pl, "업데이트 해야 할 파일은 모두 " .. #updateData.updateNeed .. "개 입니다, 예상 소요 시간은 " .. string.NiceTime( #updateData.updateNeed * 5 ) .. " 입니다." )
+						
+						catherine.update.StartUpdate_Stage01( pl, updateData )
+					else
+						catherine.update.SendConsoleMessage( pl, "업데이트가 필요 없습니다, 잠시 후 업데이트 모드에서 나갑니다." )
+						
+						timer.Simple( 5, function( )
+							catherine.update.ExitUpdateMode( )
+						end )
+					end
+				else
+				
+				end
+			end, function( err )
+			
+			end
+		)
+	end
+	
+	function catherine.update.SendUpdatePercent( pl, percent )
+		percent = math.Clamp( percent, 0, 100 )
+		
+		catherine.update._percent = percent
+		netstream.Start( pl, "catherine.update.SendUpdatePercent", percent )
+	end
+	
+	function catherine.update.SendConsoleMessage( pl, message )
+		netstream.Start( pl, "catherine.update.SendConsoleMessage", {
+			message
+		} )
+	end
+	
+	local function FolderDirectoryTranslate( dir )
+		if ( dir:sub( 1, 1 ) != "/" ) then
+			dir = "/" .. dir
+		end
+		
+		local ex = string.Explode( "/", dir )
+		
+		for k, v in pairs( ex ) do
+			if ( v != "" ) then continue end
+			
+			table.remove( ex, k )
+		end
+		
+		return ex
+	end
+	
+	function catherine.update.StartUpdate_Stage01( pl, updateData )
+		local updatemode_data1 = string.Explode( "\n", file.Read( "catherine/updatemode_data.txt", "DATA" ) or "" )
+		local updatemode_data2 = string.Explode( "\n", file.Read( "catherine/updatemode.txt", "DATA" ) or "" )
+		
+		catherine.update.SendUpdatePercent( pl, 3 )
+		catherine.update.SendConsoleMessage( pl, "현재 캐서린 프레임워크의 파일 상태를 백업 합니다 ..." )
+		local time = os.date( "*t" )
+		local today = time.year .. "-" .. time.month .. "-" .. time.day
+		local baseDir = "data/catherine/update/backup/" .. today
+		
+		timer.Simple( 3, function( )
+			fileio.MakeDirectory( "data/catherine/update" )
+			fileio.MakeDirectory( "data/catherine/update/backup" )
+			fileio.MakeDirectory( "data/catherine/update/backup/" .. today )
+			
+			catherine.update.SendConsoleMessage( pl, "백업 폴더가 생성되었습니다 경로는 'garrysmod/data/catherine/update/backup/" .. today .. "' 입니다." )
+			catherine.update.SendConsoleMessage( pl, "백업할 파일을 검색합니다 ..." )
+			
+			local content = { }
+			local files, folders = file.Find( "gamemodes/catherine/*", "GAME" )
+			
+			local function search( dir, dataTable )
+				local files, folders = file.Find( "gamemodes/catherine/" .. dir .. "/*", "GAME" )
+				
+				for k, v in pairs( files ) do
+					dataTable[ #dataTable + 1 ] = dir .. "/" .. v
+				end
+				
+				for k, v in pairs( folders ) do
+					dataTable[ v ] = dataTable[ v ] or { }
+					search( dir .. "/" .. v, dataTable )
+				end
+			end
+			
+			for k, v in pairs( files ) do
+				content[ #content + 1 ] = v
+			end
+			
+			for k, v in pairs( folders ) do
+				content[ v ] = content[ v ] or { }
+				search( v, content )
+			end
+			
+			content = table.concat( content, "\n" )
+			content = string.Explode( "\n", content )
+			
+			catherine.update.SendConsoleMessage( pl, "백업할 파일 및 폴더, " .. table.Count( content ) .. "개를 찾았습니다." )
+			
+			for k, v in pairs( content ) do
+				local toDir = FolderDirectoryTranslate( v )
+				local b = baseDir .. "/" .. toDir[ 1 ]
+				
+				for k1, v1 in pairs( toDir ) do
+					if ( k1 == 1 ) then continue end
+					
+					fileio.MakeDirectory( b )
+					b = b .. "/" .. v1 .. "/"
+				end
+			end
+			
+			catherine.update.SendUpdatePercent( pl, 5 )
+			catherine.update.SendConsoleMessage( pl, "백업을 준비하고 있습니다 ..." )
+			
+			timer.Simple( 3, function( )
+				local delta = 0
+				local per = 0
+				local maxPer = table.Count( content )
+				local onePer = math.min( 25, maxPer ) / math.max( 25, maxPer )
+				
+				catherine.update.SendConsoleMessage( pl, "백업을 진행하고 있습니다 ..." )
+				
+				for k, v in pairs( content ) do
+					timer.Simple( delta, function( )
+						local fileData = file.Read( "gamemodes/catherine/" .. v, "GAME" )
+						
+						fileData = fileData:gsub( "\r", "" )
+						
+						fileio.Write( baseDir .. "/" .. v, fileData )
+						
+						per = k / maxPer
+						catherine.update.SendConsoleMessage( pl, "백업 진행 " .. math.Round( per * 100 ) .. "% - " .. baseDir .. "/" .. v .. " ..." )
+						catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
+					end )
+					
+					delta = delta + 0.08
+				end
+				
+				timer.Simple( delta, function( )
+					catherine.update.SendUpdatePercent( pl, 40 )
+					catherine.update.SendConsoleMessage( pl, "백업을 모두 완료했습니다 ..." )
+					
+					catherine.update.StartUpdate_Stage02( pl, updateData )
+				end )
+			end )
+		end )
+	end
+	
+	function catherine.update.StartUpdate_Stage02( pl, updateData )
+		catherine.update.SendUpdatePercent( pl, 41 )
+		catherine.update.SendConsoleMessage( pl, "새로운 파일을 다운로드 준비 중 입니다 ..." )
+		local i = 1
+		local fileDatas = { }
+		local onePer = math.max( 20, #updateData.updateNeed ) / math.min( 20, #updateData.updateNeed )
+		
+		local function download( i )
+			if ( !updateData.updateNeed[ i ] ) then
+				catherine.update.SendConsoleMessage( pl, "모든 파일을 다운로드 했습니다." )
+				catherine.update.StartUpdate_Stage03( pl, updateData, fileDatas )
+				catherine.update.SendUpdatePercent( pl, 65 )
+				return
+			end
+			
+			http.Fetch( updateData.urlMaster .. updateData.updateNeed[ i ],
+				function( body )
+					if ( body == "Not Found" ) then
+						catherine.update.SendConsoleMessage( pl, "파일을 다운받지 못했습니다 - " .. updateData.updateNeed[ i ] )
+						download( i + 1 )
+						catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
+					else
+						catherine.update.SendConsoleMessage( pl, "파일을 다운로드 했습니다 - " .. updateData.updateNeed[ i ] )
+						fileDatas[ updateData.updateNeed[ i ] ] = body
+						download( i + 1 )
+						catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
+					end
+						
+				end, function( err )
+				
+				end
+			)
+		end
+		
+		download( i )
+	end
+	
+	function catherine.update.StartUpdate_Stage03( pl, updateData, fileDatas )
+		catherine.update.SendConsoleMessage( pl, "설치 할 파일 " .. table.Count( updateData.updateNeed ) .. "개를 찾았습니다." )
+		local time = os.date( "*t" )
+		local today = time.year .. "-" .. time.month .. "-" .. time.day
+		local baseDir = "data/catherine/update/buffer/" .. today
+		local onePer = math.min( #content, 5 ) / math.max( #content, 5 )
+		
+		fileio.MakeDirectory( "data/catherine/update" )
+		fileio.MakeDirectory( "data/catherine/update/buffer" )
+		fileio.MakeDirectory( "data/catherine/update/buffer/" .. today )
+		
+		local delta = 0
+		
+		for k, v in pairs( updateData.updateNeed ) do
+			timer.Simple( delta, function( )
+				local toDir = FolderDirectoryTranslate( v )
+				local b = baseDir .. "/" .. toDir[ 1 ]
+				
+				if ( #toDir == 1 ) then
+					catherine.update.SendConsoleMessage( pl, "파일을 임시 폴더에 옮겼습니다 - " .. toDir[ 1 ] )
+					catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
+					fileio.Write( b, fileDatas[ toDir[ 1 ] ] )
+				else
+					for k1, v1 in pairs( toDir ) do
+						if ( k1 == 1 ) then continue end
+						
+						fileio.MakeDirectory( b )
+						b = b .. "/" .. v1 .. "/"
+					end
+					
+					fileio.Write( b, fileDatas[ table.concat( toDir, "/" ) ] )
+					catherine.update.SendConsoleMessage( pl, "파일을 임시 폴더에 옮겼습니다 - " .. table.concat( toDir, "/" ) )
+					catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
+				end
+			end )
+			
+			delta = delta + 0.1
+		end
+		
+		timer.Simple( delta + 3, function( )
+			catherine.update.SendConsoleMessage( pl, "모든 파일을 임시 폴더에 옮겼습니다." )
+			catherine.update.StartUpdate_Stage04( pl, updateData )
+		end )
+	end
+	
+	function catherine.update.StartUpdate_Stage04( pl, updateData )
+		catherine.update.SendConsoleMessage( pl, "파일 정보를 불러옵니다 ..." )
+		local time = os.date( "*t" )
+		local today = time.year .. "-" .. time.month .. "-" .. time.day
+		local baseDir = "data/catherine/update/buffer/" .. today
+		local delta = 0
+		local content = { }
+		local onePer = math.min( #content, 5 ) / math.max( #content, 5 )
+		
+		for k, v in pairs( updateData.updateNeed ) do
+			timer.Simple( delta, function( )
+				local toDir = FolderDirectoryTranslate( v )
+				local b = baseDir .. "/" .. toDir[ 1 ]
+				
+				if ( #toDir == 1 ) then
+					catherine.update.SendConsoleMessage( pl, "파일 정보를 불러왔습니다 - " .. toDir[ 1 ] )
+					catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
+					content[ toDir[ 1 ] ] = file.Read( b, "GAME" )
+				else
+					for k1, v1 in pairs( toDir ) do
+						if ( k1 == 1 ) then continue end
+						
+						b = b .. "/" .. v1 .. "/"
+					end
+					
+					content[ table.concat( toDir, "/" ) ] = file.Read( b, "GAME" )
+					catherine.update.SendConsoleMessage( pl, "파일 정보를 불러왔습니다 - " .. table.concat( toDir, "/" ) )
+					catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
+				end
+			end )
+			
+			delta = delta + 0.1
+		end
+		
+		timer.Simple( delta + 3, function( )
+			catherine.update.SendConsoleMessage( pl, "모든 파일 정보를 불러왔습니다." )
+			catherine.update.StartUpdate_Stage05( pl, updateData, content )
+		end )
+	end
+	
+	function catherine.update.StartUpdate_Stage05( pl, updateData, content )
+		catherine.update.SendConsoleMessage( pl, "파일을 설치합니다 ..." )
+		local delta = 0
+		local baseDir = "gamemodes/catherine"
+		local oldVer = catherine.GetVersion( )
+		local onePer = math.min( #content, 33 ) / math.max( #content, 33 )
+		
+		for k, v in pairs( content ) do
+			timer.Simple( delta, function( )
+				local toDir = FolderDirectoryTranslate( k )
+				local b = baseDir .. "/" .. toDir[ 1 ]
+				
+				if ( #toDir == 1 ) then
+					catherine.update.SendConsoleMessage( pl, "파일을 설치했습니다 - " .. toDir[ 1 ] )
+					catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
+					
+					content[ toDir[ 1 ] ] = content[ toDir[ 1 ] ]:gsub( "\r", "" )
+					fileio.Write( b, content[ toDir[ 1 ] ] )
+				else
+					local dirName = table.concat( toDir, "/" )
+					
+					for k1, v1 in pairs( toDir ) do
+						if ( k1 == 1 ) then continue end
+						
+						fileio.MakeDirectory( b )
+						b = b .. "/" .. v1 .. "/"
+					end
+					
+					content[ dirName ] = content[ dirName ]:gsub( "\r", "" )
+					fileio.Write( b, content[ dirName ] )
+					catherine.update.SendConsoleMessage( pl, "파일을 설치했습니다 - " .. dirName )
+					catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
+				end
+			end )
+			
+			delta = delta + 0.1
+		end
+		
+		timer.Simple( delta + 3, function( )
+			catherine.update.SendUpdatePercent( pl, 97 )
+			catherine.update.SendConsoleMessage( pl, "모든 파일을 설치했습니다." )
+			
+			catherine.update.SendConsoleMessage( pl, "버퍼 파일을 삭제합니다 ..." )
+			
+			local time = os.date( "*t" )
+			local today = time.year .. "-" .. time.month .. "-" .. time.day
+			
+			fileio.Delete( "data/catherine/update/buffer/" .. today )
+			
+			catherine.update.SendUpdatePercent( pl, 100 )
+			catherine.update.SendConsoleMessage( pl, "버퍼 파일을 삭제했습니다." )
+			catherine.update.SendConsoleMessage( pl, "버전 정보 " .. oldVer .. " > " .. updateData.newVer )
+			catherine.update.SendConsoleMessage( pl, "업데이트가 성공적으로 완료되었습니다, 축하드립니다." )
+			catherine.update.SendConsoleMessage( pl, "잠시 후 서버를 재시작 합니다." )
+			
+			timer.Simple( 5, function( )
+				catherine.update.ExitUpdateMode( )
+			end )
+		end )
+	end
+	--[[
+	local data = {
+		newVer = "1.1",
+		updateLog = {
+		
+		},
+		updateNeed = {
+			"README.md",
+			"catherine.txt",
+			"database_config.cfg",
+			"document/korean_guide.txt",
+			"document/license.txt",
+			"entities/entities/cat_accessory_base.lua",
+			"entities/entities/cat_item.lua",
+			"entities/entities/cat_shipment.lua",
+			"entities/entities/cat_weapon_attachment.lua",
+			"entities/weapons/cat_fist.lua",
+			"entities/weapons/cat_key.lua"
+		},
+		urlMaster = "https://raw.githubusercontent.com/L7D/Catherine/master/"
+	}
+	
+	file.Write("d.txt",util.TableToJSON(data))
+	--]]
+	function catherine.update.ExitUpdateMode( )
+		local updatemode_data1 = string.Explode( "\n", file.Read( "catherine/updatemode_data.txt", "DATA" ) or "" )
+		local updatemode_data2 = string.Explode( "\n", file.Read( "catherine/updatemode.txt", "DATA" ) or "" )
+		
+		hook.Remove( "Think", "catherine.Think" )
+		hook.Remove( "CheckPassword", "catherine.CheckPassword" )
+		hook.Remove( "GetGameDescription", "catherine.GetGameDescription" )
+		concommand.Remove( "cat_forcestopupdate" )
+		
+		if ( updatemode_data2 and updatemode_data2[ 2 ] ) then
+			RunConsoleCommand( "gamemode", updatemode_data2[ 2 ] )
+		end
+		
+		if ( updatemode_data1 and updatemode_data1[ 2 ] ) then
+			RunConsoleCommand( "hostname", updatemode_data1[ 2 ] )
+		end
+		
+		file.Delete( "catherine/updatemode_data.txt" )
+		file.Delete( "catherine/updatemode.txt" )
+		
+		RunConsoleCommand( "changelevel", game.GetMap( ) )
+	end
 	
 	function catherine.update.PlayerLoadFinished( )
 		if ( catherine.update.checked ) then return end
@@ -109,6 +515,14 @@ if ( SERVER ) then
 	netstream.Hook( "catherine.update.Check", function( pl )
 		if ( pl:IsSuperAdmin( ) ) then
 			catherine.update.Check( pl )
+		else
+			netstream.Start( pl, "catherine.update.ResultCheck", LANG( pl, "System_Notify_PermissionError" ) )
+		end
+	end )
+	
+	netstream.Hook( "catherine.update.CURun", function( pl )
+		if ( catherine.configs.OWNER and catherine.configs.OWNER != "" and pl:SteamID( ) == catherine.configs.OWNER ) then
+			catherine.update.StartUpdateMode( pl )
 		else
 			netstream.Start( pl, "catherine.update.ResultCheck", LANG( pl, "System_Notify_PermissionError" ) )
 		end

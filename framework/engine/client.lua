@@ -138,7 +138,6 @@ function GM:HUDDrawScoreBoard( )
 		surface.SetMaterial( gradientDownMat )
 		surface.DrawTexturedRect( 0, 0, w, h )
 		
-		
 		local frameworkLogo = Material( catherine.configs.frameworkLogo, "smooth" )
 		
 		if ( frameworkLogo and !frameworkLogo:IsError( ) ) then
