@@ -34,63 +34,69 @@ catherine.language.Merge( "korean", {
 } )
 
 if ( SERVER ) then
+	PLUGIN.storedProfanityCount = PLUGIN.storedProfanityCount or { }
+	PLUGIN.storedKickCount = PLUGIN.storedKickCount or { }
 	local blockClasses = { "ooc", "looc" }
+	local profanityList = { }
 	
-	--[[
-		누구나 욕을 많이 알고 있죠, 다만 쓰지 않을 뿐 입니다 ..
-		^__^
-	--]]
-	local profanityList = {
-		"병신",
-		"씨발",
-		"애미",
-		"애비",
-		"섹스",
-		"미친",
-		"시발",
-		"개새끼",
-		"새끼",
-		"좆",
-		"좃",
-		"걸레년",
-		"보지", // ^-^
-		"자지", // ^-^
-		"쎾쓰",
-		"섹쓰",
-		"ㄴㅇㅁ",
-		"ㅅㅂ",
-		"ㅄ",
-		"ㅆㅂ",
-		"ㅆㅃ",
-		// 필터링 피할려고 별짓거리를 다해요.
-		"ㅅ!ㅂ",
-		"ㅅ1ㅂ",
-		"ㅅ@ㅂ",
-		"시!발",
+	function PLUGIN:RegisterProfanity( text, additive, smartIgnore )
+		profanityList[ #profanityList + 1 ] = {
+			text = text,
+			textLowered = text:lower( ),
+			additive = additive,
+			smartIgnore = smartIgnore
+		}
+	end
+	
+	PLUGIN:RegisterProfanity( "시발", {
 		"시1발",
-		"시@발",
-		"씨1발",
-		"씨!발",
-		"씨@발",
-		"병!신",
-		"병1신",
-		"병@신",
-		"니애미", // 이 유행어를 만드신 김윤태씨에게 고개를 절래-절래 흔듭니다.
-		"Sex",
-		"Fuck",
-		"Suck",
-		"Motherfucker",
-		"Mother fucker"
-	}
+		"시!발"
+	}, {
+		"시발점"
+	} )
 	
 	function PLUGIN:IsProfanity( text )
+		text = text:lower( )
+		
 		for k, v in pairs( profanityList ) do
-			if ( text:lower( ):find( v:lower( ) ) ) then
+			local startPos, endPos = text:find( v.textLowered )
+			
+			if ( startPos and endPos ) then
+				if ( v.smartIgnore ) then
+					for k1, v1 in pairs( v.smartIgnore ) do
+						local startPos1, endPos1 = text:find( v1:lower( ) )
+						
+						if ( startPos == startPos1 ) then
+							return false
+						end
+					end
+				end
+				
 				return true
+			end
+			
+			if ( v.additive ) then
+				for k1, v1 in pairs( v.additive ) do
+					if ( text:find( v1:lower( ) ) ) then
+						return true
+					end
+				end
 			end
 		end
 		
 		return false
+	end
+	
+	function PLUGIN:PlayerCharacterLoaded( pl )
+		if ( self.storedProfanityCount[ pl:SteamID( ) ] and !pl.CAT_profanityCount ) then
+			self.storedProfanityCount[ pl:SteamID( ) ] = pl.CAT_profanityCount
+		end
+	end
+	
+	function PLUGIN:PlayerDisconnected( pl )
+		if ( pl.CAT_profanityCount ) then
+			self.storedProfanityCount[ pl:SteamID( ) ] = pl.CAT_profanityCount
+		end
 	end
 	
 	function PLUGIN:OnChatControl( chatInformation )
@@ -98,9 +104,56 @@ if ( SERVER ) then
 		local uniqueID = chatInformation.uniqueID
 		
 		if ( table.HasValue( blockClasses, uniqueID ) and self:IsProfanity( chatInformation.text ) ) then
-			catherine.util.NotifyLang( pl, "Profanity_Blocker_Warning" )
+			pl.CAT_profanityCount = pl.CAT_profanityCount or 0
 			
-			return false
+			if ( pl.CAT_profanityCount <= 3 ) then
+				local timerID = "Catherine.plugin.timer.RemoveProfanityCount." .. pl:SteamID( )
+				
+				pl.CAT_profanityCount = pl.CAT_profanityCount + 1
+				
+				catherine.util.NotifyLang( pl, "Profanity_Blocker_Warning" )
+				
+				timer.Remove( timerID )
+				timer.Create( timerID, 300, pl.CAT_profanityCount, function( )
+					if ( IsValid( pl ) ) then
+						if ( pl.CAT_profanityCount ) then
+							if ( pl.CAT_profanityCount <= 0 ) then
+								timer.Remove( timerID )
+							else
+								pl.CAT_profanityCount = pl.CAT_profanityCount - 1
+							end
+						else
+							timer.Remove( timerID )
+						end
+					else
+						timer.Remove( timerID )
+					end
+				end )
+				
+				return false
+			else
+				timer.Simple( 0, function( )
+					local count = self.storedKickCount[ pl:SteamID( ) ]
+					
+					if ( count ) then
+						if ( count >= 2 ) then
+							self.storedKickCount[ pl:SteamID( ) ] = 0
+							
+							pl:Ban( 10, LANG( pl, "Profanity_Blocker_Warning" ) )
+						else
+							self.storedKickCount[ pl:SteamID( ) ] = count + 1
+							
+							pl:Kick( LANG( pl, "Profanity_Blocker_Warning" ) )
+						end
+					else
+						self.storedKickCount[ pl:SteamID( ) ] = 1
+						
+						pl:Kick( LANG( pl, "Profanity_Blocker_Warning" ) )
+					end
+				end )
+				
+				return false
+			end
 		end
 	end
 end
