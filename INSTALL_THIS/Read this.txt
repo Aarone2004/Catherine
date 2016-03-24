@@ -1,13 +1,13 @@
-<KOREAN>
+ï»¿<KOREAN>
 
-FileIO ¸ðµâ
+FileIO ëª¨ë“ˆ
 <https://github.com/alexgrist/gmsv_fileio>
 
-Ä³¼­¸°ÀÇ ¾÷µ¥ÀÌÆ® ½Ã½ºÅÛÀ» »ç¿ëÇÏ·Á¸é ÇÊ¼ö·Î ¼³Ä¡ÇØ¾ß ÇÕ´Ï´Ù.
+ìºì„œë¦°ì˜ ì—…ë°ì´íŠ¸ ì‹œìŠ¤í…œì„ ì‚¬ìš©í•˜ë ¤ë©´ í•„ìˆ˜ë¡œ ì„¤ì¹˜í•´ì•¼ í•©ë‹ˆë‹¤.
 
-Windows »ç¿ëÀÚ´Â 'gmsv_fileio_win32'¸¦ Linux »ç¿ëÀÚ´Â 'gmsv_fileio_linux' DLL ÆÄÀÏÀ» º¹»çÇØ¼­, ´ç½ÅÀÇ ¼­¹öÆÄÀÏÀÇ 'garrysmod/lua/bin' Æú´õ ¾È¿¡ ¼³Ä¡ÇÏ½Ã°í ¼­¹ö¸¦ ÀçºÎÆÃ ÇÏ½Ê½Ã¿À.
+Windows ì‚¬ìš©ìžëŠ” 'gmsv_fileio_win32'ë¥¼ Linux ì‚¬ìš©ìžëŠ” 'gmsv_fileio_linux' DLL íŒŒì¼ì„ ë³µì‚¬í•´ì„œ, ë‹¹ì‹ ì˜ ì„œë²„íŒŒì¼ì˜ 'garrysmod/lua/bin' í´ë” ì•ˆì— ì„¤ì¹˜í•˜ì‹œê³  ì„œë²„ë¥¼ ìž¬ë¶€íŒ… í•˜ì‹­ì‹œì˜¤.
 
-(bin Æú´õ°¡ ¾øÀ» °æ¿ì »õ·Î ¸¸µå½Ê½Ã¿À.)
+(bin í´ë”ê°€ ì—†ì„ ê²½ìš° ìƒˆë¡œ ë§Œë“œì‹­ì‹œì˜¤.)
 
 
 
