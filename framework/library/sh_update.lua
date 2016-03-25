@@ -268,7 +268,10 @@ if ( SERVER ) then
 				return
 			end
 			
-			http.Fetch( updateData.urlMaster .. updateData.updateNeed[ i ],
+			local url = updateData.urlMaster .. updateData.updateNeed[ i ]
+			url = url:Replace( " ", "%20" )
+			
+			http.Fetch( url,
 				function( body )
 					if ( body == "Not Found" ) then
 						catherine.update.SendConsoleMessage( pl, "파일을 다운받지 못했습니다 - " .. updateData.updateNeed[ i ], Color( 255, 0, 0 ) )
