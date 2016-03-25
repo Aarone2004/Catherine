@@ -221,6 +221,11 @@ end
 function PANEL:Build_Setting( )
 	if ( self.currMenu != 3 ) then return end
 
+	if ( IsValid( self.settingPanel.panel ) ) then
+		self:Refresh_SettingList( )
+		return
+	end
+	
 	self.settingPanel.panel = vgui.Create( "DPanel", self.settingPanel )
 	self.settingPanel.panel:SetPos( 0, 0 )
 	self.settingPanel.panel:SetSize( self.settingPanel:GetWide( ), self.settingPanel:GetTall( ) )
@@ -335,103 +340,198 @@ function PANEL:Build_Setting( )
 	
 	parentPanel.factionLists = vgui.Create( "DPanelList", parentPanel )
 	parentPanel.factionLists:SetPos( 10, 190 )
-	parentPanel.factionLists:SetWide( w - 30 )
+	parentPanel.factionLists:SetSize( w - 30, 100 )
 	parentPanel.factionLists:SetSpacing( 0 )
 	parentPanel.factionLists:EnableHorizontal( false )
 	parentPanel.factionLists:EnableVerticalScrollbar( true )
-	parentPanel.factionLists:SetAutoSize( true )
 	parentPanel.factionLists.Paint = function( pnl, w, h ) end
+	
+	parentPanel.vendorAccClaLabel = vgui.Create( "DLabel", parentPanel )
+	parentPanel.vendorAccClaLabel:SetPos( 10, 320 )
+	parentPanel.vendorAccClaLabel:SetColor( Color( 255, 255, 255, 255 ) )
+	parentPanel.vendorAccClaLabel:SetFont( "catherine_normal15" )
+	parentPanel.vendorAccClaLabel:SetText( LANG( "Vendor_UI_VendorAllowClassStr" ) )
+	parentPanel.vendorAccClaLabel:SizeToContents( )
+	
+	parentPanel.classLists = vgui.Create( "DPanelList", parentPanel )
+	parentPanel.classLists:SetPos( 10, 340 )
+	parentPanel.classLists:SetSize( w - 30, 100 )
+	parentPanel.classLists:SetSpacing( 0 )
+	parentPanel.classLists:EnableVerticalScrollbar( true )
+	parentPanel.classLists.Paint = function( pnl, w, h ) end
 
-	self:Refresh_SettingList( 1 )
-	self:Refresh_SettingList( 2 )
+	self:Refresh_SettingList( )
 	
 	self.settingPanel.panel.Paint = function( pnl, w, h ) end
 end
 
-function PANEL:Refresh_SettingList( id )
+function PANEL:Refresh_SettingList( )
 	local parentPanel = self.settingPanel.panel
 	local w, h = self.settingPanel.panel:GetWide( ), self.settingPanel.panel:GetTall( )
+	local scrollBar = parentPanel.factionLists.VBar
+	local scroll = scrollBar.Scroll
 	
-	if ( id == 1 ) then
-		parentPanel.factionLists:Clear( )
-		
-		local factionData = self.vendorData.factions
-		local notyetPermission = table.Count( factionData ) == 0 and true or false
+	parentPanel.factionLists:Clear( )
+	
+	local factionData = self.vendorData.factions
+	local notyetPermission = table.Count( factionData ) == 0 and true or false
 
-		for k, v in pairs( catherine.faction.GetAll( ) ) do
-			local has = table.HasValue( factionData, v.uniqueID )
-			local name = catherine.util.StuffLanguage( v.name )
-			local allowed = LANG( "Vendor_UI_VendorAllowFaction_AllowedStr" )
+	for k, v in SortedPairs( catherine.faction.GetAll( ) ) do
+		local has = table.HasValue( factionData, v.uniqueID )
+		local name = catherine.util.StuffLanguage( v.name )
+		local allowed = LANG( "Vendor_UI_VendorAllowFaction_AllowedStr" )
+		
+		local panel = vgui.Create( "DPanel" )
+		panel:SetSize( parentPanel.factionLists:GetWide( ), 25 )
+		panel.Paint = function( pnl, w, h )
+			draw.SimpleText( name, "catherine_normal20", 5, h / 2, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT, 1 )
 			
-			local panel = vgui.Create( "DPanel" )
-			panel:SetSize( parentPanel.factionLists:GetWide( ), 25 )
-			panel.Paint = function( pnl, w, h )
-				draw.SimpleText( name, "catherine_normal20", 5, h / 2, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT, 1 )
+			if ( notyetPermission or has ) then
+				surface.SetFont( "catherine_normal15" )
+				local tw, th = surface.GetTextSize( allowed )
 				
-				if ( notyetPermission or has ) then
-					surface.SetFont( "catherine_normal15" )
-					local tw, th = surface.GetTextSize( allowed )
-					
-					surface.SetDrawColor( 255, 255, 255, 255 )
-					surface.SetMaterial( Material( "CAT/ui/accept.png" ) )
-					surface.DrawTexturedRect( w - 30 - tw, h / 2 - 16 / 2, 16, 16 )
-					
-					draw.SimpleText( allowed, "catherine_normal15", w - 10, h / 2, Color( 255, 255, 255, 255 ), TEXT_ALIGN_RIGHT, 1 )
-				end
+				surface.SetDrawColor( 255, 255, 255, 255 )
+				surface.SetMaterial( Material( "icon16/accept.png" ) )
+				surface.DrawTexturedRect( w - 30 - tw, h / 2 - 16 / 2, 16, 16 )
+				
+				draw.SimpleText( allowed, "catherine_normal15", w - 10, h / 2, Color( 255, 255, 255, 255 ), TEXT_ALIGN_RIGHT, 1 )
 			end
+		end
+		
+		local button = vgui.Create( "DButton", panel )
+		button:SetSize( panel:GetWide( ), panel:GetTall( ) )
+		button:SetDrawBackground( false )
+		button:SetText( "" )
+		button.DoClick = function( )
+			local menu = DermaMenu( )
 			
-			local button = vgui.Create( "DButton", panel )
-			button:SetSize( panel:GetWide( ), panel:GetTall( ) )
-			button:SetDrawBackground( false )
-			button:SetText( "" )
-			button.DoClick = function( )
-				local menu = DermaMenu( )
-				
-				menu:AddOption( LANG( "Vendor_UI_VendorAllowFaction_AllowOptionStr" ), function( )
-					for v2, v2 in pairs( factionData ) do
-						if ( v.uniqueID == v2 ) then
-							return
-						end
+			menu:AddOption( LANG( "Vendor_UI_VendorAllowFaction_AllowOptionStr" ), function( )
+				for v2, v2 in pairs( factionData ) do
+					if ( v.uniqueID == v2 ) then
+						return
 					end
-					
-					factionData[ #factionData + 1 ] = v.uniqueID
-					
+				end
+				
+				factionData[ #factionData + 1 ] = v.uniqueID
+				
+				netstream.Start( "catherine.plugin.vendor.VendorWork", {
+					self.ent,
+					CAT_VENDOR_ACTION_SETTING_CHANGE,
+					{ factions = factionData }
+				} )
+			end )
+			
+			menu:AddOption( LANG( "Vendor_UI_VendorAllowFaction_DenyOptionStr" ), function( )
+				local changed = false
+				
+				for k2, v2 in pairs( factionData ) do
+					if ( v.uniqueID == v2 ) then
+						table.remove( factionData, k2 )
+						changed = true
+					end
+				end
+				
+				if ( changed ) then
 					netstream.Start( "catherine.plugin.vendor.VendorWork", {
 						self.ent,
 						CAT_VENDOR_ACTION_SETTING_CHANGE,
 						{ factions = factionData }
 					} )
-					
-					self:Refresh_SettingList( 1 )
-				end )
-				
-				menu:AddOption( LANG( "Vendor_UI_VendorAllowFaction_DenyOptionStr" ), function( )
-					local changed = false
-					
-					for k2, v2 in pairs( factionData ) do
-						if ( v.uniqueID == v2 ) then
-							table.remove( factionData, k2 )
-							changed = true
-						end
-					end
-					
-					if ( changed ) then
-						netstream.Start( "catherine.plugin.vendor.VendorWork", {
-							self.ent,
-							CAT_VENDOR_ACTION_SETTING_CHANGE,
-							{ factions = factionData }
-						} )
-						
-						self:Refresh_SettingList( 1 )
-					end
-				end )
-				
-				menu:Open( )
-			end
+				end
+			end )
 			
-			parentPanel.factionLists:AddItem( panel )
+			menu:Open( )
 		end
+		
+		parentPanel.factionLists:AddItem( panel )
 	end
+	
+	scrollBar:AnimateTo( scroll, 0.3, 0, 0.1 )
+	
+	local scrollBar = parentPanel.classLists.VBar
+	local scroll = scrollBar.Scroll
+	
+	parentPanel.classLists:Clear( )
+	
+	local classData = self.vendorData.classes
+	local notyetPermission = table.Count( classData ) == 0 and true or false
+	
+	for k, v in SortedPairs( catherine.class.GetAll( ) ) do
+		local has = table.HasValue( classData, v.uniqueID )
+		local name = catherine.util.StuffLanguage( v.name )
+		local allowed = LANG( "Vendor_UI_VendorAllowClass_AllowedStr" )
+		local factionTable = catherine.faction.FindByIndex( v.faction )
+		
+		if ( !factionTable ) then continue end
+		
+		local factionName = catherine.util.StuffLanguage( factionTable.name )
+		
+		local panel = vgui.Create( "DPanel" )
+		panel:SetSize( parentPanel.factionLists:GetWide( ), 25 )
+		panel.Paint = function( pnl, w, h )
+			draw.SimpleText( name .. " / " .. factionName, "catherine_normal20", 5, h / 2, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT, 1 )
+			
+			if ( notyetPermission or has ) then
+				surface.SetFont( "catherine_normal15" )
+				local tw, th = surface.GetTextSize( allowed )
+				
+				surface.SetDrawColor( 255, 255, 255, 255 )
+				surface.SetMaterial( Material( "icon16/accept.png" ) )
+				surface.DrawTexturedRect( w - 30 - tw, h / 2 - 16 / 2, 16, 16 )
+				
+				draw.SimpleText( allowed, "catherine_normal15", w - 10, h / 2, Color( 255, 255, 255, 255 ), TEXT_ALIGN_RIGHT, 1 )
+			end
+		end
+		
+		local button = vgui.Create( "DButton", panel )
+		button:SetSize( panel:GetWide( ), panel:GetTall( ) )
+		button:SetDrawBackground( false )
+		button:SetText( "" )
+		button.DoClick = function( )
+			local menu = DermaMenu( )
+			
+			menu:AddOption( LANG( "Vendor_UI_VendorAllowClass_AllowOptionStr" ), function( )
+				for v2, v2 in pairs( classData ) do
+					if ( v.uniqueID == v2 ) then
+						return
+					end
+				end
+				
+				classData[ #classData + 1 ] = v.uniqueID
+				
+				netstream.Start( "catherine.plugin.vendor.VendorWork", {
+					self.ent,
+					CAT_VENDOR_ACTION_SETTING_CHANGE,
+					{ classes = classData }
+				} )
+			end )
+			
+			menu:AddOption( LANG( "Vendor_UI_VendorAllowClass_DenyOptionStr" ), function( )
+				local changed = false
+				
+				for k2, v2 in pairs( classData ) do
+					if ( v.uniqueID == v2 ) then
+						table.remove( classData, k2 )
+						changed = true
+					end
+				end
+				
+				if ( changed ) then
+					netstream.Start( "catherine.plugin.vendor.VendorWork", {
+						self.ent,
+						CAT_VENDOR_ACTION_SETTING_CHANGE,
+						{ classes = classData }
+					} )
+				end
+			end )
+			
+			menu:Open( )
+		end
+		
+		parentPanel.classLists:AddItem( panel )
+	end
+	
+	scrollBar:AnimateTo( scroll, 0.3, 0, 0.1 )
 end
 
 function PANEL:Refresh_List( id )

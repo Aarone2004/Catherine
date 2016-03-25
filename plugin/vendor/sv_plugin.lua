@@ -291,12 +291,7 @@ function PLUGIN:VendorWork( pl, ent, workID, data )
 			return
 		end
 		
-		local varsID = {
-			"name",
-			"desc",
-			"factions",
-			"classes"
-		}
+		PrintTable(data)
 		
 		for k, v in pairs( data ) do
 			self:SetVendorData( ent, k, v )
@@ -356,18 +351,29 @@ function PLUGIN:CanUseVendor( pl, ent )
 		return false
 	end
 	
+	if ( pl:IsAdmin( ) ) then
+		return true
+	end
+	
 	local factionData = ent.vendorData.factions
 	
-	if ( !pl:IsAdmin( ) and #factionData != 0 and !table.HasValue( factionData, pl:Faction( ) ) ) then
+	if ( #factionData != 0 and !table.HasValue( factionData, pl:Faction( ) ) ) then
 		return false
 	end
 	
 	local classData = ent.vendorData.classes
+	local class = pl:Class( )
 	
-	if ( !pl:IsAdmin( ) and #classData != 0 and !table.HasValue( classData, pl:Class( ) ) ) then
-		return false
+	if ( class ) then
+		class = catherine.class.FindByIndex( class )
+		
+		if ( #classData != 0 and class and !table.HasValue( classData, class.uniqueID ) ) then
+			if ( class and class.faction == pl:Team( ) ) then
+				return false
+			end
+		end
 	end
-
+	
 	return true
 end
 
