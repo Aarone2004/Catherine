@@ -260,7 +260,7 @@ if ( SERVER ) then
 		local fileDatas = { }
 		local onePer = math.min( 30, #updateData.updateNeed ) / math.max( 30, #updateData.updateNeed )
 		local blackListExx = {
-			".dll"
+			"dll"
 		}
 		
 		local function download( i )
