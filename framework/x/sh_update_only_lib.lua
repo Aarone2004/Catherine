@@ -74,9 +74,151 @@ else
 			a = 255,
 			startTime = CurTime( ),
 			endTime = CurTime( ) + 10,
-			color = data[ 2 ] or Color( 255, 255, 255 )
+			color = data[ 2 ] or Color( 0, 0, 0 )
 		}
 	end )
+	
+	--[[
+		- catherine.DrawCircle( originX, originY, radius, thick, startAng, distAng, iter ) function source -
+		: Night-Eagle's circle drawing library
+		: 1.1
+		: https://code.google.com/p/wintersurvival/source/browse/trunk/gamemode/cl_circle.lua?r=154
+	--]]
+	function catherine.DrawCircle( originX, originY, radius, thick, startAng, distAng, iter )
+		startAng = math.rad( startAng )
+		distAng = math.rad( distAng )
+		if ( !iter or iter <= 1 ) then
+			iter = 8
+		else
+			iter = math.Round( iter )
+		end
+			
+		local stepAng = math.abs( distAng ) / iter
+			
+		if ( thick ) then
+			if ( distAng > 0 ) then
+				for i = 0, iter - 1 do
+					local eradius = radius + thick
+					local cur1 = stepAng * i + startAng
+					local cur2 = cur1 + stepAng
+					local points = {
+						{
+							x = math.cos( cur2 ) * radius + originX,
+							y = -math.sin( cur2 ) * radius + originY,
+							u = 0,	
+							v = 0,
+						},
+						{
+							x = math.cos( cur2 ) * eradius + originX,
+							y = -math.sin( cur2 ) * eradius + originY,
+							u = 1,
+							v = 0,
+						},
+						{
+							x = math.cos( cur1 ) * eradius + originX,
+							y = -math.sin( cur1 ) * eradius + originY,
+							u = 1,
+							v = 1,
+						},
+						{
+							x = math.cos( cur1 ) * radius + originX,
+							y = -math.sin( cur1 ) * radius + originY,
+							u = 0,
+							v = 1,
+						},
+					}
+									
+					surface.DrawPoly( points )
+				end
+			else
+				for i = 0, iter - 1 do
+					local eradius = radius + thick
+					local cur1 = stepAng * i + startAng
+					local cur2 = cur1 + stepAng
+					local points = {
+						{
+							x = math.cos( cur1 ) * radius + originX,
+							y = math.sin( cur1 ) * radius + originY,
+							u = 0,
+							v = 0,
+						},
+						{
+							x = math.cos( cur1 ) * eradius + originX,
+							y = math.sin( cur1 ) * eradius + originY,
+							u = 1,
+							v = 0,
+						},
+						{
+							x = math.cos( cur2 ) * eradius + originX,
+							y = math.sin( cur2 ) * eradius + originY,
+							u = 1,
+							v = 1,
+						},
+						{
+							x = math.cos( cur2 ) * radius + originX,
+							y = math.sin( cur2 ) * radius + originY,
+							u = 0,
+							v = 1,
+						},
+					}
+					
+					surface.DrawPoly( points )
+				end
+			end
+		else
+			if ( distAng > 0 ) then
+				local points = { }
+							
+				if ( math.abs( distAng ) < 360 ) then
+					points[ 1 ] = {
+						x = originX,
+						y = originY,
+						u = .5,
+						v = .5,
+					}
+					iter = iter + 1
+				end
+							
+				for i = iter - 1, 0, -1 do
+					local cur1 = stepAng * i + startAng
+					local cur2 = cur1 + stepAng
+					table.insert( points, {
+						x = math.cos( cur1 ) * radius + originX,
+						y = -math.sin( cur1 ) * radius + originY,
+						u = ( 1 + math.cos( cur1 ) ) / 2,
+						v = ( 1 + math.sin( -cur1 ) ) / 2,
+					} )
+				end
+							
+				surface.DrawPoly( points )
+			else
+				local points = { }
+	 
+				if ( math.abs( distAng ) < 360 ) then
+					points[ 1 ] = {
+						x = originX,
+						y = originY,
+						u = .5,
+						v = .5,
+					}
+					iter = iter + 1
+				end
+				
+				for i = 0, iter - 1 do
+					local cur1 = stepAng * i + startAng
+					local cur2 = cur1 + stepAng
+					table.insert( points, {
+					x = math.cos( cur1 ) * radius + originX,
+					y = math.sin( cur1 ) * radius + originY,
+					u = ( 1 + math.cos( cur1 ) ) / 2,
+					v = ( 1 + math.sin( cur1 ) ) / 2,
+					} )
+				end
+				
+				surface.DrawPoly( points )
+			end
+		end
+	end
 	
 	local modules = {
 		"CHudHealth",
@@ -137,16 +279,16 @@ else
 	
 	surface.CreateFont( "catherine_updatePercent", {
 		font = "Segoe UI Light",
-		size = 55,
+		size = 65,
 		weight = 1000
 	} )
 	
 	hook.Add( "HUDPaint", "catherine.HUDPaint", function( )
 		local w, h = ScrW( ), ScrH( )
 		
-		draw.RoundedBox( 0, 0, 0, w, h, Color( 50, 50, 50, 255 ) )
+		draw.RoundedBox( 0, 0, 0, w, h, Color( 235, 235, 235, 255 ) )
 		
-		surface.SetDrawColor( 80, 80, 80, 255 )
+		surface.SetDrawColor( 245, 245, 245, 255 )
 		surface.SetMaterial( Material( "gui/gradient_up" ) )
 		surface.DrawTexturedRect( 0, 0, w, h )
 	end )
@@ -169,7 +311,7 @@ if ( CLIENT ) then
 		
 		self.frameworkMaterial = Material( "CAT/symbol/cat_v5.png", "smooth" )
 		self.percentAni = 0
-		self.percentText = 0
+		self.loadingAni = 0
 		
 		self:SetSize( self.w, self.h )
 		self:Center( )
@@ -178,38 +320,41 @@ if ( CLIENT ) then
 		self:SetDraggable( false )
 		self:ShowCloseButton( false )
 		
-		timer.Simple( 8, function( )
+		timer.Simple( 10, function( )
 			netstream.Start( "catherine.update.StartUpdate" )
 		end )
 	end
 	
 	function PANEL:Paint( w, h )
-		draw.RoundedBox( 0, 0, 0, w, h, Color( 50, 50, 50, 255 ) )
+		self.loadingAni = self.loadingAni + 5
 		
-		surface.SetDrawColor( 80, 80, 80, 255 )
+		draw.RoundedBox( 0, 0, 0, w, h, Color( 200, 200, 200, 255 ) )
+		
+		surface.SetDrawColor( 245, 245, 245, 255 )
 		surface.SetMaterial( Material( "gui/gradient_up" ) )
 		surface.DrawTexturedRect( 0, 0, w, h )
 		
-		draw.SimpleText( "Catherine Update Mode", "catherine_updateTitle", w - 15, 25, Color( 255, 255, 255, 255 ), TEXT_ALIGN_RIGHT, 1 )
-		draw.SimpleText( "WARNING : Don't Turn off server, until this work is done.", "catherine_updateNormal20", w - 15, 50, Color( 255, 0, 0, 255 ), TEXT_ALIGN_RIGHT, 1 )
-		draw.SimpleText( math.Round( self.percentText ) .. "%", "catherine_updatePercent", w - 10, h - 50, Color( 255, 255, 255, 255 ), TEXT_ALIGN_RIGHT, 1 )
+		draw.SimpleText( "Catherine Update Mode", "catherine_updateTitle", w - 15, 25, Color( 50, 50, 50, 255 ), TEXT_ALIGN_RIGHT, 1 )
+		draw.SimpleText( "Don't Turn off server, until this work is done.", "catherine_updateNormal20", w - 15, 50, Color( 255, 0, 0, 255 ), TEXT_ALIGN_RIGHT, 1 )
 		
+		draw.NoTexture( )
+		surface.SetDrawColor( 50, 50, 50, 255 )
+		catherine.DrawCircle( w - 40, h - 60, 20, 7, self.loadingAni, 70, 100 )
 		
 		if ( self.frameworkMaterial and !self.frameworkMaterial:IsError( ) ) then
 			local frameworkMaterial_w, frameworkMaterial_h = self.frameworkMaterial:Width( ) / 2, self.frameworkMaterial:Height( ) / 2
 			
-			surface.SetDrawColor( 170, 170, 170, 100 )
+			surface.SetDrawColor( 50, 50, 50, 150 )
 			surface.SetMaterial( self.frameworkMaterial )
 			surface.DrawTexturedRect( w / 2 - frameworkMaterial_w / 2, h / 2 - frameworkMaterial_h / 2, frameworkMaterial_w, frameworkMaterial_h )
 		end
 		
 		self.percentAni = Lerp( 0.05, self.percentAni, ( catherine.update._percent / 100 ) * w )
-		self.percentText = Lerp( 0.05, self.percentText, catherine.update._percent )
 		
-		draw.RoundedBox( 0, 0, h - 20, w, 20, Color( 50, 50, 50, 255 ) )
-		draw.RoundedBox( 0, 0, h - 20, self.percentAni, 20, Color( 255, 255, 255, 255 ) )
+		draw.RoundedBox( 0, 0, h - 20, w, 20, Color( 50, 50, 50, 100 ) )
+		draw.RoundedBox( 0, 0, h - 20, self.percentAni, 20, Color( 50, 50, 50, 200 ) )
 		
-		draw.SimpleText( "Backup > Download > Apply", "catherine_updateNormal20", 15, h - 40, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT, 1 )
+		draw.SimpleText( "Backup > Download > Apply", "catherine_updateNormal20", 15, h - 40, Color( 0, 0, 0, 255 ), TEXT_ALIGN_LEFT, 1 )
 		
 		for k = 1, #catherine.update._consoleMessage do
 			local v = catherine.update._consoleMessage[ k ]

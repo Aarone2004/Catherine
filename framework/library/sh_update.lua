@@ -236,7 +236,7 @@ if ( SERVER ) then
 						fileio.Write( baseDir .. "/" .. v, fileData )
 						
 						per = k / maxPer
-						catherine.update.SendConsoleMessage( pl, "백업 진행 " .. math.Round( per * 100 ) .. "% - " .. baseDir .. "/" .. v .. " ...", Color( 150, 255, 150 ) )
+						catherine.update.SendConsoleMessage( pl, "[성공] 백업을 진행합니다 ... " .. math.Round( per * 100 ) .. "% - " .. baseDir .. "/" .. v .. " ..." )
 						catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
 					end )
 					
@@ -259,6 +259,9 @@ if ( SERVER ) then
 		local i = 1
 		local fileDatas = { }
 		local onePer = math.min( 30, #updateData.updateNeed ) / math.max( 30, #updateData.updateNeed )
+		local blackListExx = {
+			".dll"
+		}
 		
 		local function download( i )
 			if ( !updateData.updateNeed[ i ] ) then
@@ -271,23 +274,29 @@ if ( SERVER ) then
 			local url = updateData.urlMaster .. updateData.updateNeed[ i ]
 			url = url:Replace( " ", "%20" )
 			
-			http.Fetch( url,
-				function( body )
-					if ( body == "Not Found" ) then
-						catherine.update.SendConsoleMessage( pl, "파일을 다운받지 못했습니다 - " .. updateData.updateNeed[ i ], Color( 255, 0, 0 ) )
-						download( i + 1 )
-						catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
-					else
-						catherine.update.SendConsoleMessage( pl, "파일을 다운로드 했습니다 - " .. updateData.updateNeed[ i ], Color( 150, 255, 150 ) )
-						fileDatas[ updateData.updateNeed[ i ] ] = body
-						download( i + 1 )
-						catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
+			if ( table.HasValue( blackListExx, string.GetExtensionFromFilename( updateData.updateNeed[ i ] ) ) ) then
+				catherine.update.SendConsoleMessage( pl, "[실패] 해당 파일은 다운받을 수 없습니다. - " .. updateData.updateNeed[ i ], Color( 255, 0, 0 ) )
+				download( i + 1 )
+				catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
+			else
+				http.Fetch( url,
+					function( body )
+						if ( body == "Not Found" ) then
+							catherine.update.SendConsoleMessage( pl, "[실패] 파일을 다운받지 못했습니다 - " .. updateData.updateNeed[ i ], Color( 255, 0, 0 ) )
+							download( i + 1 )
+							catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
+						else
+							catherine.update.SendConsoleMessage( pl, "[성공] 파일을 다운로드 했습니다 - " .. updateData.updateNeed[ i ] )
+							fileDatas[ updateData.updateNeed[ i ] ] = body
+							download( i + 1 )
+							catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
+						end
+							
+					end, function( err )
+					
 					end
-						
-				end, function( err )
-				
-				end
-			)
+				)
+			end
 		end
 		
 		download( i )
@@ -312,7 +321,7 @@ if ( SERVER ) then
 				local b = baseDir .. "/" .. toDir[ 1 ]
 				
 				if ( #toDir == 1 ) then
-					catherine.update.SendConsoleMessage( pl, "파일을 임시 폴더에 옮겼습니다 - " .. toDir[ 1 ] )
+					catherine.update.SendConsoleMessage( pl, "[성공] 파일을 임시 폴더에 옮겼습니다 - " .. toDir[ 1 ] )
 					catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
 					fileio.Write( b, fileDatas[ toDir[ 1 ] ] )
 				else
@@ -324,7 +333,7 @@ if ( SERVER ) then
 					end
 					
 					fileio.Write( b, fileDatas[ table.concat( toDir, "/" ) ] )
-					catherine.update.SendConsoleMessage( pl, "파일을 임시 폴더에 옮겼습니다 - " .. table.concat( toDir, "/" ) )
+					catherine.update.SendConsoleMessage( pl, "[성공] 파일을 임시 폴더에 옮겼습니다 - " .. table.concat( toDir, "/" ) )
 					catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
 				end
 			end )
@@ -353,7 +362,7 @@ if ( SERVER ) then
 				local b = baseDir .. "/" .. toDir[ 1 ]
 				
 				if ( #toDir == 1 ) then
-					catherine.update.SendConsoleMessage( pl, "파일 정보를 불러왔습니다 - " .. toDir[ 1 ] )
+					catherine.update.SendConsoleMessage( pl, "[성공] 파일 정보를 불러왔습니다 - " .. toDir[ 1 ] )
 					catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
 					content[ toDir[ 1 ] ] = file.Read( b, "GAME" )
 				else
@@ -364,7 +373,7 @@ if ( SERVER ) then
 					end
 					
 					content[ table.concat( toDir, "/" ) ] = file.Read( b, "GAME" )
-					catherine.update.SendConsoleMessage( pl, "파일 정보를 불러왔습니다 - " .. table.concat( toDir, "/" ) )
+					catherine.update.SendConsoleMessage( pl, "[성공] 파일 정보를 불러왔습니다 - " .. table.concat( toDir, "/" ) )
 					catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
 				end
 			end )
@@ -379,62 +388,69 @@ if ( SERVER ) then
 	end
 	
 	function catherine.update.StartUpdate_Stage05( pl, updateData, content )
+		jit.off( )
 		catherine.update.SendConsoleMessage( pl, "파일을 설치합니다 ..." )
-		local delta = 0
-		local baseDir = "gamemodes/catherine"
-		local oldVer = catherine.GetVersion( )
-		local onePer = math.min( #content, 23 ) / math.max( #content, 23 )
+		catherine.update.SendConsoleMessage( pl, "LuaJit 컴파일러를 일시적으로 비활성화 했습니다." )
 		
-		for k, v in pairs( content ) do
-			timer.Simple( delta, function( )
-				local toDir = FolderDirectoryTranslate( k )
-				local b = baseDir .. "/" .. toDir[ 1 ]
-				
-				if ( #toDir == 1 ) then
-					catherine.update.SendConsoleMessage( pl, "* 파일을 설치했습니다 - " .. toDir[ 1 ], Color( 150, 255, 150 ) )
-					catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
+		timer.Simple( 5, function( )
+			local delta = 0
+			local baseDir = "gamemodes/catherine"
+			local oldVer = catherine.GetVersion( )
+			local onePer = math.min( #content, 23 ) / math.max( #content, 23 )
+			
+			for k, v in pairs( content ) do
+				timer.Simple( delta, function( )
+					local toDir = FolderDirectoryTranslate( k )
+					local b = baseDir .. "/" .. toDir[ 1 ]
 					
-					content[ toDir[ 1 ] ] = content[ toDir[ 1 ] ]:gsub( "\r", "" )
-					fileio.Write( b, content[ toDir[ 1 ] ] )
-				else
-					local dirName = table.concat( toDir, "/" )
-					
-					for k1, v1 in pairs( toDir ) do
-						if ( k1 == 1 ) then continue end
+					if ( #toDir == 1 ) then
+						catherine.update.SendConsoleMessage( pl, "[성공] 업데이트 파일을 설치했습니다 - " .. toDir[ 1 ] )
+						catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
 						
-						fileio.MakeDirectory( b )
-						b = b .. "/" .. v1 .. "/"
+						content[ toDir[ 1 ] ] = content[ toDir[ 1 ] ]:gsub( "\r", "" )
+						fileio.Write( b, content[ toDir[ 1 ] ] )
+					else
+						local dirName = table.concat( toDir, "/" )
+						
+						for k1, v1 in pairs( toDir ) do
+							if ( k1 == 1 ) then continue end
+							
+							fileio.MakeDirectory( b )
+							b = b .. "/" .. v1 .. "/"
+						end
+						
+						content[ dirName ] = content[ dirName ]:gsub( "\r", "" )
+						fileio.Write( b, content[ dirName ] )
+						catherine.update.SendConsoleMessage( pl, "[성공] 업데이트 파일을 설치했습니다 - " .. dirName )
+						catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
 					end
-					
-					content[ dirName ] = content[ dirName ]:gsub( "\r", "" )
-					fileio.Write( b, content[ dirName ] )
-					catherine.update.SendConsoleMessage( pl, "* 파일을 설치했습니다 - " .. dirName, Color( 150, 255, 150 ) )
-					catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
-				end
-			end )
+				end )
+				
+				delta = delta + 0.8
+			end
 			
-			delta = delta + 0.2
-		end
-		
-		timer.Simple( delta + 3, function( )
-			catherine.update.SendUpdatePercent( pl, 97 )
-			catherine.update.SendConsoleMessage( pl, "모든 파일을 설치했습니다." )
-			
-			catherine.update.SendConsoleMessage( pl, "버퍼 파일을 삭제합니다 ..." )
-			
-			local time = os.date( "*t" )
-			local today = time.year .. "-" .. time.month .. "-" .. time.day
-			
-			fileio.Delete( "data/catherine/update/buffer/" .. today )
-			
-			catherine.update.SendUpdatePercent( pl, 100 )
-			catherine.update.SendConsoleMessage( pl, "버퍼 파일을 삭제했습니다." )
-			catherine.update.SendConsoleMessage( pl, "버전 정보 " .. oldVer .. " > " .. updateData.newVer, Color( 150, 255, 150 ) )
-			catherine.update.SendConsoleMessage( pl, "업데이트가 성공적으로 완료되었습니다, 축하드립니다.", Color( 150, 255, 150 ) )
-			catherine.update.SendConsoleMessage( pl, "잠시 후 서버를 재시작 합니다.", Color( 150, 255, 150 ) )
-			
-			timer.Simple( 5, function( )
-				catherine.update.ExitUpdateMode( )
+			timer.Simple( delta + 5, function( )
+				jit.on( )
+				catherine.update.SendUpdatePercent( pl, 97 )
+				catherine.update.SendConsoleMessage( pl, "모든 업데이트 파일을 설치했습니다." )
+				catherine.update.SendConsoleMessage( pl, "LuaJit 컴파일러를 다시 활성화 했습니다." )
+				
+				catherine.update.SendConsoleMessage( pl, "버퍼 파일을 삭제합니다 ..." )
+				
+				local time = os.date( "*t" )
+				local today = time.year .. "-" .. time.month .. "-" .. time.day
+				
+				fileio.Delete( "data/catherine/update/buffer/" .. today )
+				
+				catherine.update.SendUpdatePercent( pl, 100 )
+				catherine.update.SendConsoleMessage( pl, "버퍼 파일을 삭제했습니다." )
+				catherine.update.SendConsoleMessage( pl, "버전 정보 " .. oldVer .. " > " .. updateData.newVer )
+				catherine.update.SendConsoleMessage( pl, "업데이트가 성공적으로 완료되었습니다, 축하드립니다." )
+				catherine.update.SendConsoleMessage( pl, "잠시 후 서버를 재시작 합니다." )
+				
+				timer.Simple( 5, function( )
+					catherine.update.ExitUpdateMode( )
+				end )
 			end )
 		end )
 	end
