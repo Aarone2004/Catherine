@@ -73,7 +73,8 @@ else
 			text = data[ 1 ],
 			a = 255,
 			startTime = CurTime( ),
-			endTime = CurTime( ) + 10
+			endTime = CurTime( ) + 10,
+			color = data[ 2 ] or Color( 255, 255, 255 )
 		}
 	end )
 	
@@ -219,7 +220,7 @@ if ( CLIENT ) then
 				a = 255 - math.Clamp( math.TimeFraction( v.startTime, v.endTime, CurTime( ) ) * 255, 0, 255 )
 			end
 			
-			draw.SimpleText( v.text, "catherine_updateNormal15", 50, ( h - 100 ) - 20 * ( t - k ), Color( 255, 255, 255, a ), TEXT_ALIGN_LEFT, 1 )
+			draw.SimpleText( v.text, "catherine_updateNormal15", 50, ( h - 100 ) - 20 * ( t - k ), Color( v.color.r, v.color.g, v.color.b, a ), TEXT_ALIGN_LEFT, 1 )
 		end
 	end
 	

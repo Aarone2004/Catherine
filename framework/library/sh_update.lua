@@ -76,6 +76,10 @@ if ( SERVER ) then
 			end
 		end
 	end
+	
+	concommand.Add( "startUpdate", function()
+		catherine.update.StartUpdateMode( player.GetByID(1) )
+	end)
 	//catherine.update.StartUpdateMode( player.GetByID(1) )
 	function catherine.update.StartUpdateMode( pl )
 		catherine.UpdateModeReboot( pl )
@@ -133,9 +137,10 @@ if ( SERVER ) then
 		netstream.Start( pl, "catherine.update.SendUpdatePercent", percent )
 	end
 	
-	function catherine.update.SendConsoleMessage( pl, message )
+	function catherine.update.SendConsoleMessage( pl, message, color )
 		netstream.Start( pl, "catherine.update.SendConsoleMessage", {
-			message
+			message,
+			color
 		} )
 	end
 	
@@ -222,7 +227,7 @@ if ( SERVER ) then
 				local delta = 0
 				local per = 0
 				local maxPer = table.Count( content )
-				local onePer = math.min( 25, maxPer ) / math.max( 25, maxPer )
+				local onePer = math.min( 30, maxPer ) / math.max( 30, maxPer )
 				
 				catherine.update.SendConsoleMessage( pl, "백업을 진행하고 있습니다 ..." )
 				
@@ -235,7 +240,7 @@ if ( SERVER ) then
 						fileio.Write( baseDir .. "/" .. v, fileData )
 						
 						per = k / maxPer
-						catherine.update.SendConsoleMessage( pl, "백업 진행 " .. math.Round( per * 100 ) .. "% - " .. baseDir .. "/" .. v .. " ..." )
+						catherine.update.SendConsoleMessage( pl, "백업 진행 " .. math.Round( per * 100 ) .. "% - " .. baseDir .. "/" .. v .. " ...", Color( 150, 255, 150 ) )
 						catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
 					end )
 					
@@ -243,7 +248,7 @@ if ( SERVER ) then
 				end
 				
 				timer.Simple( delta, function( )
-					catherine.update.SendUpdatePercent( pl, 40 )
+					catherine.update.SendUpdatePercent( pl, 35 )
 					catherine.update.SendConsoleMessage( pl, "백업을 모두 완료했습니다 ..." )
 					
 					catherine.update.StartUpdate_Stage02( pl, updateData )
@@ -253,11 +258,11 @@ if ( SERVER ) then
 	end
 	
 	function catherine.update.StartUpdate_Stage02( pl, updateData )
-		catherine.update.SendUpdatePercent( pl, 41 )
+		catherine.update.SendUpdatePercent( pl, 35 )
 		catherine.update.SendConsoleMessage( pl, "새로운 파일을 다운로드 준비 중 입니다 ..." )
 		local i = 1
 		local fileDatas = { }
-		local onePer = math.max( 20, #updateData.updateNeed ) / math.min( 20, #updateData.updateNeed )
+		local onePer = math.min( 30, #updateData.updateNeed ) / math.max( 30, #updateData.updateNeed )
 		
 		local function download( i )
 			if ( !updateData.updateNeed[ i ] ) then
@@ -270,11 +275,11 @@ if ( SERVER ) then
 			http.Fetch( updateData.urlMaster .. updateData.updateNeed[ i ],
 				function( body )
 					if ( body == "Not Found" ) then
-						catherine.update.SendConsoleMessage( pl, "파일을 다운받지 못했습니다 - " .. updateData.updateNeed[ i ] )
+						catherine.update.SendConsoleMessage( pl, "파일을 다운받지 못했습니다 - " .. updateData.updateNeed[ i ], Color( 255, 0, 0 ) )
 						download( i + 1 )
 						catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
 					else
-						catherine.update.SendConsoleMessage( pl, "파일을 다운로드 했습니다 - " .. updateData.updateNeed[ i ] )
+						catherine.update.SendConsoleMessage( pl, "파일을 다운로드 했습니다 - " .. updateData.updateNeed[ i ], Color( 150, 255, 150 ) )
 						fileDatas[ updateData.updateNeed[ i ] ] = body
 						download( i + 1 )
 						catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
@@ -294,7 +299,7 @@ if ( SERVER ) then
 		local time = os.date( "*t" )
 		local today = time.year .. "-" .. time.month .. "-" .. time.day
 		local baseDir = "data/catherine/update/buffer/" .. today
-		local onePer = math.min( #content, 5 ) / math.max( #content, 5 )
+		local onePer = math.min( #updateData.updateNeed, 5 ) / math.max( #updateData.updateNeed, 5 )
 		
 		fileio.MakeDirectory( "data/catherine/update" )
 		fileio.MakeDirectory( "data/catherine/update/buffer" )
@@ -325,7 +330,7 @@ if ( SERVER ) then
 				end
 			end )
 			
-			delta = delta + 0.1
+			delta = delta + 0.07
 		end
 		
 		timer.Simple( delta + 3, function( )
@@ -341,7 +346,7 @@ if ( SERVER ) then
 		local baseDir = "data/catherine/update/buffer/" .. today
 		local delta = 0
 		local content = { }
-		local onePer = math.min( #content, 5 ) / math.max( #content, 5 )
+		local onePer = math.min( #updateData.updateNeed, 5 ) / math.max( #updateData.updateNeed, 5 )
 		
 		for k, v in pairs( updateData.updateNeed ) do
 			timer.Simple( delta, function( )
@@ -365,7 +370,7 @@ if ( SERVER ) then
 				end
 			end )
 			
-			delta = delta + 0.1
+			delta = delta + 0.07
 		end
 		
 		timer.Simple( delta + 3, function( )
@@ -379,7 +384,7 @@ if ( SERVER ) then
 		local delta = 0
 		local baseDir = "gamemodes/catherine"
 		local oldVer = catherine.GetVersion( )
-		local onePer = math.min( #content, 33 ) / math.max( #content, 33 )
+		local onePer = math.min( #content, 23 ) / math.max( #content, 23 )
 		
 		for k, v in pairs( content ) do
 			timer.Simple( delta, function( )
@@ -387,7 +392,7 @@ if ( SERVER ) then
 				local b = baseDir .. "/" .. toDir[ 1 ]
 				
 				if ( #toDir == 1 ) then
-					catherine.update.SendConsoleMessage( pl, "파일을 설치했습니다 - " .. toDir[ 1 ] )
+					catherine.update.SendConsoleMessage( pl, "* 파일을 설치했습니다 - " .. toDir[ 1 ], Color( 150, 255, 150 ) )
 					catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
 					
 					content[ toDir[ 1 ] ] = content[ toDir[ 1 ] ]:gsub( "\r", "" )
@@ -404,12 +409,12 @@ if ( SERVER ) then
 					
 					content[ dirName ] = content[ dirName ]:gsub( "\r", "" )
 					fileio.Write( b, content[ dirName ] )
-					catherine.update.SendConsoleMessage( pl, "파일을 설치했습니다 - " .. dirName )
+					catherine.update.SendConsoleMessage( pl, "* 파일을 설치했습니다 - " .. dirName, Color( 150, 255, 150 ) )
 					catherine.update.SendUpdatePercent( pl, catherine.update._percent + onePer )
 				end
 			end )
 			
-			delta = delta + 0.1
+			delta = delta + 0.2
 		end
 		
 		timer.Simple( delta + 3, function( )
@@ -425,9 +430,9 @@ if ( SERVER ) then
 			
 			catherine.update.SendUpdatePercent( pl, 100 )
 			catherine.update.SendConsoleMessage( pl, "버퍼 파일을 삭제했습니다." )
-			catherine.update.SendConsoleMessage( pl, "버전 정보 " .. oldVer .. " > " .. updateData.newVer )
-			catherine.update.SendConsoleMessage( pl, "업데이트가 성공적으로 완료되었습니다, 축하드립니다." )
-			catherine.update.SendConsoleMessage( pl, "잠시 후 서버를 재시작 합니다." )
+			catherine.update.SendConsoleMessage( pl, "버전 정보 " .. oldVer .. " > " .. updateData.newVer, Color( 150, 255, 150 ) )
+			catherine.update.SendConsoleMessage( pl, "업데이트가 성공적으로 완료되었습니다, 축하드립니다.", Color( 150, 255, 150 ) )
+			catherine.update.SendConsoleMessage( pl, "잠시 후 서버를 재시작 합니다.", Color( 150, 255, 150 ) )
 			
 			timer.Simple( 5, function( )
 				catherine.update.ExitUpdateMode( )
