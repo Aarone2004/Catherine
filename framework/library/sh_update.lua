@@ -77,10 +77,6 @@ if ( SERVER ) then
 		end
 	end
 	
-	concommand.Add( "startUpdate", function()
-		catherine.update.StartUpdateMode( player.GetByID(1) )
-	end)
-	//catherine.update.StartUpdateMode( player.GetByID(1) )
 	function catherine.update.StartUpdateMode( pl )
 		catherine.UpdateModeReboot( pl )
 	end
@@ -439,30 +435,7 @@ if ( SERVER ) then
 			end )
 		end )
 	end
-	--[[
-	local data = {
-		newVer = "1.1",
-		updateLog = {
-		
-		},
-		updateNeed = {
-			"README.md",
-			"catherine.txt",
-			"database_config.cfg",
-			"document/korean_guide.txt",
-			"document/license.txt",
-			"entities/entities/cat_accessory_base.lua",
-			"entities/entities/cat_item.lua",
-			"entities/entities/cat_shipment.lua",
-			"entities/entities/cat_weapon_attachment.lua",
-			"entities/weapons/cat_fist.lua",
-			"entities/weapons/cat_key.lua"
-		},
-		urlMaster = "https://raw.githubusercontent.com/L7D/Catherine/master/"
-	}
 	
-	file.Write("d.txt",util.TableToJSON(data))
-	--]]
 	function catherine.update.ExitUpdateMode( )
 		local updatemode_data1 = string.Explode( "\n", file.Read( "catherine/updatemode_data.txt", "DATA" ) or "" )
 		local updatemode_data2 = string.Explode( "\n", file.Read( "catherine/updatemode.txt", "DATA" ) or "" )
