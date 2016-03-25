@@ -194,15 +194,7 @@ function PANEL:InstallModules( )
 	self.updatePanel.updateNow:SetStrColor( Color( 0, 0, 0, 255 ) )
 	self.updatePanel.updateNow:SetGradientColor( Color( 0, 0, 0, 255 ) )
 	self.updatePanel.updateNow.Click = function( pnl )
-		local data = catherine.net.GetNetGlobalVar( "cat_updateData", { } )
-		
-		if ( data.version != catherine.GetVersion( ) ) then
-			Derma_Query( LANG( "System_UI_Update_UpdateNow_Q1" ), "", LANG( "Basic_UI_YES" ), function( )
-				Derma_Query( LANG( "System_UI_Update_UpdateNow_Q2" ), "", LANG( "Basic_UI_YES" ), function( )
-					netstream.Start( "catherine.update.CURun" )
-				end, LANG( "Basic_UI_NO" ), function( ) end )
-			end, LANG( "Basic_UI_NO" ), function( ) end )
-		end
+		self:InGameUpdateCheck( )
 	end
 	self.updatePanel.updateNow.PaintBackground = function( pnl, w, h )
 		draw.RoundedBox( 0, 0, 0, w, h, Color( 245, 245, 245, 255 ) )
@@ -1086,7 +1078,105 @@ function PANEL:InstallModules( )
 		draw.RoundedBox( 0, 0, 0, w, h, Color( 245, 200, 200, 255 ) )
 	end
 	
+	timer.Simple( firstMenuDelta, function( )
+		self:InGameUpdateCheck( )
+	end )
+	
 	self.moduleInstalled = true
+end
+
+function PANEL:InGameUpdateCheck( )
+	local data = catherine.net.GetNetGlobalVar( "cat_updateData", { } )
+	
+	if ( data.version == catherine.GetVersion( ) ) then
+		return
+	end
+	
+	if ( IsValid( self.inGameUpdateNotify ) ) then
+		return
+	end
+	
+	self.inGameUpdateNotify = vgui.Create( "DPanel", self )
+	
+	self.inGameUpdateNotify.w, self.inGameUpdateNotify.h = self.w * 0.5, self.h * 0.5
+	self.inGameUpdateNotify.x, self.inGameUpdateNotify.y = self.w / 2 - self.inGameUpdateNotify.w / 2, self.h / 2 - self.inGameUpdateNotify.h / 2
+	
+	self.inGameUpdateNotify:SetSize( self.inGameUpdateNotify.w, self.inGameUpdateNotify.h )
+	self.inGameUpdateNotify:SetPos( self.inGameUpdateNotify.x, self.h )
+	self.inGameUpdateNotify:MoveTo( self.inGameUpdateNotify.x, self.h / 2 - self.inGameUpdateNotify.h / 2, 0.2, 0 )
+	
+	self.inGameUpdateNotify.Paint = function( pnl, w, h )
+		draw.RoundedBox( 0, 0, 0, w, h, Color( 255, 255, 255, 200 ) )
+		
+		surface.SetDrawColor( 0, 0, 0, 255 )
+		surface.DrawOutlinedRect( 0, 0, w, h )
+		
+		draw.RoundedBox( 0, 0, 30, w, 1, Color( 0, 0, 0, 255 ) )
+		
+		draw.SimpleText( LANG( "System_UI_Update_InGameUpdate_Title" ), "catherine_normal20", w / 2, 15, Color( 0, 0, 0, 255 ), 1, 1 )
+		
+		local wrapTexts = catherine.util.GetWrapTextData( LANG( "System_UI_Update_InGameUpdate_Desc" ), w - 80, "catherine_normal20" )
+		
+		if ( #wrapTexts == 1 ) then
+			draw.SimpleText( wrapTexts[ 1 ], "catherine_normal20", 10, 50, Color( 0, 0, 0, 255 ), TEXT_ALIGN_LEFT, 1 )
+		else
+			local textY = 50
+			
+			for k, v in pairs( wrapTexts ) do
+				draw.SimpleText( v, "catherine_normal20", 10, textY, Color( 0, 0, 0, 255 ), TEXT_ALIGN_LEFT, 1 )
+				
+				textY = textY + 30
+			end
+		end
+		
+		draw.SimpleText( LANG( "System_UI_Update_InGameUpdate_Desc2" ), "catherine_normal25", w / 2, h * 0.8, Color( 0, 0, 0, 255 ), 1, 1 )
+	end
+	
+	self.inGameUpdateNotify.accept = vgui.Create( "catherine.vgui.button", self.inGameUpdateNotify )
+	self.inGameUpdateNotify.accept:SetPos( 10, self.inGameUpdateNotify.h - 35 )
+	self.inGameUpdateNotify.accept:SetSize( self.inGameUpdateNotify.w / 2 - 20, 25 )
+	self.inGameUpdateNotify.accept:SetStr( LANG( "Basic_UI_YES" ) )
+	self.inGameUpdateNotify.accept:SetStrColor( Color( 0, 0, 0, 255 ) )
+	self.inGameUpdateNotify.accept:SetGradientColor( Color( 0, 255, 0, 255 ) )
+	self.inGameUpdateNotify.accept.Click = function( )
+		local data = catherine.net.GetNetGlobalVar( "cat_updateData", { } )
+		
+		if ( data.version != catherine.GetVersion( ) ) then
+			Derma_Query( LANG( "System_UI_Update_UpdateNow_Q1" ), "", LANG( "Basic_UI_YES" ), function( )
+				Derma_Query( LANG( "System_UI_Update_UpdateNow_Q2" ), "", LANG( "Basic_UI_YES" ), function( )
+					netstream.Start( "catherine.update.CURun" )
+				end, LANG( "Basic_UI_NO" ), function( ) end )
+			end, LANG( "Basic_UI_NO" ), function( ) end )
+		else
+			if ( self.inGameUpdateNotify.closing ) then return end
+			
+			self.inGameUpdateNotify.closing = true
+			
+			self.inGameUpdateNotify:MoveTo( self.inGameUpdateNotify.x, self.h, 0.2, 0, nil, function( )
+				self.inGameUpdateNotify:Remove( )
+				self.inGameUpdateNotify = nil
+				
+				Derma_Message( LANG( "System_UI_Update_AlreadyNew", data ), LANG( "Basic_UI_Notify" ), LANG( "Basic_UI_OK" ) )
+			end )
+		end
+	end
+	
+	self.inGameUpdateNotify.close = vgui.Create( "catherine.vgui.button", self.inGameUpdateNotify )
+	self.inGameUpdateNotify.close:SetPos( self.inGameUpdateNotify.w / 2, self.inGameUpdateNotify.h - 35 )
+	self.inGameUpdateNotify.close:SetSize( self.inGameUpdateNotify.w / 2 - 20, 25 )
+	self.inGameUpdateNotify.close:SetStr( LANG( "Basic_UI_NO" ) )
+	self.inGameUpdateNotify.close:SetStrColor( Color( 0, 0, 0, 255 ) )
+	self.inGameUpdateNotify.close:SetGradientColor( Color( 0, 0, 0, 255 ) )
+	self.inGameUpdateNotify.close.Click = function( )
+		if ( self.inGameUpdateNotify.closing ) then return end
+		
+		self.inGameUpdateNotify.closing = true
+		
+		self.inGameUpdateNotify:MoveTo( self.inGameUpdateNotify.x, self.h, 0.2, 0, nil, function( )
+			self.inGameUpdateNotify:Remove( )
+			self.inGameUpdateNotify = nil
+		end )
+	end
 end
 
 function PANEL:Paint( w, h )
