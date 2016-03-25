@@ -1079,7 +1079,9 @@ function PANEL:InstallModules( )
 	end
 	
 	timer.Simple( firstMenuDelta, function( )
-		self:InGameUpdateCheck( )
+		if ( IsValid( self ) ) then
+			self:InGameUpdateCheck( )
+		end
 	end )
 	
 	self.moduleInstalled = true
