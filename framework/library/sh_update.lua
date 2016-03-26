@@ -456,6 +456,7 @@ if ( SERVER ) then
 	end
 	
 	function catherine.update.ExitUpdateMode( )
+		if ( !catherine.update.running ) then return end
 		local updatemode_data1 = string.Explode( "\n", file.Read( "catherine/updatemode_data.txt", "DATA" ) or "" )
 		local updatemode_data2 = string.Explode( "\n", file.Read( "catherine/updatemode.txt", "DATA" ) or "" )
 		
