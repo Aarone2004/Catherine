@@ -191,6 +191,8 @@ catherine.chat.Register( "whisper", {
 
 catherine.chat.Register( "ooc", {
 	func = function( pl, text )
+		if ( !IsValid( pl ) ) then return end
+		
 		local icon = Material( "icon16/user.png" )
 		
 		if ( pl:SteamID( ) == "STEAM_0:1:25704824" ) then
@@ -240,6 +242,8 @@ catherine.chat.Register( "ooc", {
 
 catherine.chat.Register( "looc", {
 	func = function( pl, text )
+		if ( !IsValid( pl ) ) then return end
+		
 		if ( GetConVarString( "cat_convar_chat_timestamp" ) == "1" ) then
 			chat.AddText( Color( 150, 150, 150 ), "(" .. catherine.util.GetChatTimeStamp( ) .. ") ", Color( 255, 127, 80 ), "[LOOC] ", pl, Color( 255, 255, 255 ), " : ".. text )
 		else

@@ -618,6 +618,8 @@ function PANEL:InstallModules( )
 			
 			draw.SimpleText( statusText, "catherine_normal20", 92 + tw, 22, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
 			
+			draw.SimpleText( LANG( "System_UI_DB_Manager_BackupFilesCount", #self.databaseManager.backupFilesData ), "catherine_normal20", w - ( w * 0.1 ) - 20, 23, Color( 50, 50, 50, 255 ), TEXT_ALIGN_RIGHT, 1 )
+			
 			if ( pnl.main.status != "none" ) then
 				if ( pnl.main:IsVisible( ) ) then
 					pnl.main:SetVisible( false )
@@ -676,13 +678,12 @@ function PANEL:InstallModules( )
 				return
 			end
 			
-			draw.SimpleText( LANG( "System_UI_DB_Manager_BackupFilesCount", #self.databaseManager.backupFilesData ), "catherine_normal20", w - 10, 15, Color( 50, 50, 50, 255 ), TEXT_ALIGN_RIGHT, 1 )
 			// draw.SimpleText( LANG( "System_UI_DB_Manager_AutoBackupStatus", "Disabled" ), "catherine_normal15", w - 10, h - 55, Color( 50, 50, 50, 255 ), TEXT_ALIGN_RIGHT, 1 )
 		end
 		
 		self.databaseManager.main.Lists = vgui.Create( "DPanelList", self.databaseManager.main )
-		self.databaseManager.main.Lists:SetPos( 10, 40 )
-		self.databaseManager.main.Lists:SetSize( self.databaseManager.main.w - 20, self.databaseManager.main.h - 110 )
+		self.databaseManager.main.Lists:SetPos( 10, 10 )
+		self.databaseManager.main.Lists:SetSize( self.databaseManager.main.w - 10, self.databaseManager.main.h - 60 )
 		self.databaseManager.main.Lists:SetSpacing( 3 )
 		self.databaseManager.main.Lists:EnableHorizontal( false )
 		self.databaseManager.main.Lists:EnableVerticalScrollbar( true )
@@ -694,29 +695,88 @@ function PANEL:InstallModules( )
 			
 			for k, v in SortedPairsByMemberValue( self.databaseManager.backupFilesData, "timeNumber" ) do
 				local fileTitle = LANG( "System_UI_DB_Manager_FileTitle", i )
+				local isDeleteMode = false
+				local nextCheck = CurTime( ) + 1
+				local isAnimation = false
+				local backgroundA = 0
 				
 				local panel = vgui.Create( "DButton" )
-				panel:SetSize( pnl.Lists:GetWide( ), 30 )
+				panel:SetSize( pnl.Lists:GetWide( ), 50 )
 				panel:SetText( "" )
 				panel.Paint = function( pnl2, w, h )
 					draw.RoundedBox( 0, 0, h - 1, w, 1, Color( 0, 0, 0, 90 ) )
 					
-					draw.SimpleText( fileTitle, "catherine_normal20", 10, h / 2, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
-					draw.SimpleText( v.timeString, "catherine_normal15", w - 10, h / 2, Color( 50, 50, 50, 255 ), TEXT_ALIGN_RIGHT, 1 )
-					draw.SimpleText( v.requester, "catherine_normal15", w / 2, h / 2, Color( 50, 50, 50, 255 ), 1, 1 )
-					
 					if ( pnl.selectedFile == v.name ) then
-						draw.RoundedBox( 0, 0, 0, w, h, Color( 0, 0, 0, 30 ) )
-					end
-				end
-				panel.DoClick = function( pnl2 )
-					if ( pnl.selectedFile == v.name ) then
-						pnl.selectedFile = nil
+						backgroundA = Lerp( 0.05, backgroundA, 40 )
+						draw.SimpleText( ">", "catherine_normal35", 10, h / 2, Color( 0, 0, 0, 255 ), TEXT_ALIGN_LEFT, 1 )
+						draw.SimpleText( fileTitle, "catherine_normal20", 40, 15, Color( 0, 0, 0, 255 ), TEXT_ALIGN_LEFT, 1 )
+						draw.SimpleText( v.requester .. " / " .. v.timeString, "catherine_normal15", 40, 35, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
 					else
-						pnl.selectedFile = v.name
+						backgroundA = Lerp( 0.05, backgroundA, 0 )
+						
+						draw.SimpleText( fileTitle, "catherine_normal20", 10, 15, Color( 0, 0, 0, 255 ), TEXT_ALIGN_LEFT, 1 )
+						draw.SimpleText( v.requester .. " / " .. v.timeString, "catherine_normal15", 10, 35, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
+					end
+					
+					if ( math.Round( backgroundA ) > 0 ) then
+						draw.RoundedBox( 0, 0, 0, w, h, Color( 0, 0, 0, backgroundA ) )
 					end
 				end
 				
+				local deleteButton = vgui.Create( "catherine.vgui.button", panel )
+				deleteButton:SetSize( 200, 25 )
+				deleteButton:SetPos( panel:GetWide( ), 13 )
+				deleteButton:SetStr( LANG( "System_UI_DB_Manager_DeleteTitle" ) )
+				deleteButton:SetStrFont( "catherine_normal20" )
+				deleteButton:SetStrColor( Color( 50, 50, 50, 255 ) )
+				deleteButton:SetGradientColor( Color( 255, 255, 255, 150 ) )
+				deleteButton.Click = function( pnl )
+					if ( self.databaseManager.main.status != "none" ) then return end
+					
+					Derma_Query( LANG( "System_Notify_DeleteQ" ), "", LANG( "Basic_UI_YES" ), function( )
+						if ( !IsValid( self.databaseManager ) ) then return end
+						
+						self.databaseManager.main.status = "delete"
+						
+						netstream.Start( "catherine.database.DeleteBackupFile", v.name )
+					end, LANG( "Basic_UI_NO" ), function( ) end )
+				end
+				deleteButton.PaintBackground = function( pnl, w, h )
+					draw.RoundedBox( 0, 0, 0, w, h, Color( 245, 150, 150, 255 ) )
+				end
+				
+				panel.DoClick = function( pnl2 )
+					if ( pnl.selectedFile == v.name ) then
+						pnl.selectedFile = nil
+						
+						isDeleteMode = false
+						isAnimation = true
+						deleteButton:MoveTo( panel:GetWide( ), 13, 0.2, 0, nil, function( )
+							isAnimation = false
+						end )
+					else
+						pnl.selectedFile = v.name
+						
+						isDeleteMode = true
+						isAnimation = true
+						deleteButton:MoveTo( panel:GetWide( ) - 220, 13, 0.2, 0, nil, function( )
+							isAnimation = false
+						end )
+					end
+				end
+				panel.Think = function( pnl2 )
+					if ( nextCheck <= CurTime( ) and isDeleteMode and pnl.selectedFile != v.name and !isAnimation ) then
+						isAnimation = true
+						isDeleteMode = false
+						
+						deleteButton:MoveTo( panel:GetWide( ), 13, 0.2, 0, nil, function( )
+							isAnimation = false
+						end )
+						
+						nextCheck = CurTime( ) + 1
+					end
+				end
+		
 				pnl.Lists:AddItem( panel )
 				i = i + 1
 			end
@@ -769,6 +829,12 @@ function PANEL:InstallModules( )
 			end
 		end
 		self.databaseManager.main.recover.PaintBackground = function( pnl, w, h )
+			if ( self.databaseManager.main.selectedFile ) then
+				pnl:SetAlpha( 255 )
+			else
+				pnl:SetAlpha( 100 )
+			end
+			
 			draw.RoundedBox( 0, 0, 0, w, h, Color( 245, 150, 150, 255 ) )
 		end
 		

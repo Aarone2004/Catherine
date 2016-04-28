@@ -1,4 +1,4 @@
---[[
+﻿--[[
 < CATHERINE > - A free role-playing framework for Garry's Mod.
 Development and design by L7D.
 
