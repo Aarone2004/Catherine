@@ -55,14 +55,12 @@ hook.Add( "SchemaInitialized", "catherine.font.SchemaInitialized", function( )
 		} )
 		
 		catherine.font.Register( "catherine_lightUI" .. size, {
-			//font = "Segoe UI Light",
 			font = font,
 			size = size,
 			weight = 1000
 		} )
 		
 		catherine.font.Register( "catherine_lightUIoutline" .. size, {
-			//font = "Segoe UI Light",
 			font = font,
 			size = size,
 			weight = 1000,

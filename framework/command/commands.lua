@@ -832,11 +832,13 @@ catherine.command.Register( {
 	command = "roll",
 	desc = "Roll a dice. (for RP)",
 	runFunc = function( pl, args )
-		if ( args[ 1 ] ) then
-			args[ 1 ] = tonumber( args[ 1 ] )
+		local number = tonumber( args[ 1 ] ) or 100
+		
+		if ( number > 100 ) then
+			number = 100
 		end
 		
-		catherine.chat.Send( pl, "roll", math.random( 1, args[ 1 ] or 100 ) )
+		catherine.chat.Send( pl, "roll", math.random( 1, number ) )
 	end
 } )
 
