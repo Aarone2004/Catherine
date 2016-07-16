@@ -71,6 +71,8 @@ function catherine.globalban.UpdateDatabase( )
 			else
 				MsgC( Color( 0, 255, 0 ), "[CAT GlobalBan] Your server has using Latest Global Ban Database!\n" )
 			end
+			
+			timer.Remove( "Catherine.timer.globalban.ReUpdate" )
 		end, function( err )
 			catherine.globalban.connectError = true
 			

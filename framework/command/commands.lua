@@ -37,8 +37,8 @@ catherine.command.Register( {
 			args[ 1 ] = tonumber( args[ 1 ] )
 		end
 		
-		catherine.player.RagdollWork( pl, !pl:IsRagdolled( ), args[ 1 ] )
-		pl.CAT_falloverNextCan = CurTime( ) + 15
+		catherine.player.RagdollWork( pl, !pl:IsRagdolled( ), args[ 1 ], true )
+		pl.CAT_falloverNextCan = CurTime( ) + catherine.configs.nextFalloverTime
 	end
 } )
 

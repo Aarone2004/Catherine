@@ -58,6 +58,20 @@ local ammoTypes = {
 	"slam"
 }
 
+function PLUGIN:PlayerRagdollJoined( pl )
+	local data = { }
+	
+	for k, v in pairs( ammoTypes ) do
+		local ammoCount = pl:GetAmmoCount( v )
+		
+		if ( ammoCount > 0 ) then
+			data[ v ] = ammoCount
+		end
+	end
+	
+	catherine.character.SetCharVar( pl, "ammos", data )
+end
+
 function PLUGIN:PostCharacterSave( pl )
 	local data = { }
 	

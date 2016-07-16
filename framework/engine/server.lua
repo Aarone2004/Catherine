@@ -310,10 +310,13 @@ end
 
 function GM:PlayerSpawn( pl )
 	if ( IsValid( pl.CAT_deathBody ) ) then
-		pl:SetNetVar( "ragdollIndex", nil )
-		
 		pl.CAT_deathBody:Remove( )
 		pl.CAT_deathBody = nil
+	end
+	
+	if ( IsValid( pl.CAT_ragdoll ) ) then
+		pl.CAT_ragdoll:Remove( )
+		pl.CAT_ragdoll = nil
 	end
 	
 	pl.CAT_deathSoundPlayed = nil
@@ -324,6 +327,8 @@ function GM:PlayerSpawn( pl )
 	pl:SetNetVar( "deathTime", nil )
 	pl:SetNetVar( "isTied", nil )
 	pl:SetNetVar( "isRagdolled", nil )
+	pl:SetNetVar( "ragdollIndex", nil )
+	pl:SetNetVar( "isForceRagdolled", nil )
 	
 	pl:Freeze( false )
 	pl:SetNoDraw( false )
