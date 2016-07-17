@@ -241,6 +241,7 @@ LANGUAGE.data = {
 	[ "System_UI_Update_InGameUpdate_Title" ] = "In-Game Update",
 	[ "System_UI_Update_InGameUpdate_Desc" ] = "In-game update is available.",
 	[ "System_UI_Update_InGameUpdate_Desc2" ] = "You are want to Update?",
+	[ "System_UI_Update_InGameUpdate_NoFileIO" ] = "File IO module failed to load, so Can't update.",
 	[ "System_UI_Update_UpdateNow_Q1" ] = "Are you sure update to the latest version of Catherine?, All your changes will be overwritten.",
 	[ "System_UI_Update_UpdateNow_Q2" ] = "Are you sure you want to update to the latest version?",
 	[ "System_Notify_NewVersionUpdateNeed" ] = "Released a new version for Catherine, recommend update.",

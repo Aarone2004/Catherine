@@ -237,6 +237,7 @@ LANGUAGE.data = {
 	[ "System_UI_Update_InGameUpdate_Title" ] = "인-게임 업데이트",
 	[ "System_UI_Update_InGameUpdate_Desc" ] = "인-게임 업데이트가 가능합니다, 업데이트 하시면 최신 버전의 캐서린을 바로 써보실 수 있습니다, 업데이트를 실행하면 귀하를 제외한 모든 사람이 서버에서 강제퇴장 처리되며 서버를 자동으로 다시 시작합니다.",
 	[ "System_UI_Update_InGameUpdate_Desc2" ] = "업데이트를 하시겠습니까?",
+	[ "System_UI_Update_InGameUpdate_NoFileIO" ] = "File IO 모듈이 서버에 설치되어있지 않습니다, 업데이트를 할 수 없습니다.",
 	[ "System_UI_Update_UpdateNow_Q1" ] = "캐서린을 최신 버전으로 업데이트 하시겠습니까?, 모든 사용자 변경 사항이 덮어쓰기됩니다.",
 	[ "System_UI_Update_UpdateNow_Q2" ] = "정말로 최신 버전으로 업데이트를 하시겠습니까?",
 	[ "System_Notify_NewVersionUpdateNeed" ] = "캐서린의 새로운 업데이트가 있습니다, 시스템 메뉴에서 지금 업데이트 하세요!",

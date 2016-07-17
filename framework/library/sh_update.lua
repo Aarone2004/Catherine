@@ -19,7 +19,17 @@ along with Catherine.  If not, see <http://www.gnu.org/licenses/>.
 catherine.update = catherine.update or { }
 
 if ( SERVER ) then
-	require( "fileio" )
+	catherine.update.noFileIO = catherine.update.noFileIO or false
+	
+	local success, failMessage = pcall( require, "fileio" )
+	
+	if ( !success ) then
+		MsgC( Color( 255, 0, 0 ), "[CAT UPDATE ERROR] File IO module failed to load. [" .. failMessage .. "]\n" )
+		catherine.update.noFileIO = true
+	else
+		MsgC( Color( 0, 255, 0 ), "[CAT UPDATE] File IO module loaded.\n" )
+		catherine.update.noFileIO = false
+	end
 	
 	catherine.update.checked = catherine.update.checked or false
 	
@@ -498,7 +508,7 @@ if ( SERVER ) then
 	hook.Add( "PlayerLoadFinished", "catherine.update.PlayerLoadFinished", catherine.update.PlayerLoadFinished )
 	hook.Add( "PlayerSpawnedInCharacter", "catherine.update.PlayerSpawnedInCharacter", catherine.update.PlayerSpawnedInCharacter )
 	
-	timer.Create( "catherine.update.NotifyAuto", 900, 0, function( )
+	timer.Create( "catherine.update.NotifyAuto", 1500, 0, function( )
 		local data = catherine.net.GetNetGlobalVar( "cat_updateData", { version = catherine.GetVersion( ) } )
 		
 		if ( data.version == catherine.GetVersion( ) ) then
@@ -520,7 +530,11 @@ if ( SERVER ) then
 	
 	netstream.Hook( "catherine.update.CURun", function( pl )
 		if ( catherine.configs.OWNER and catherine.configs.OWNER != "" and pl:SteamID( ) == catherine.configs.OWNER ) then
-			catherine.update.StartUpdateMode( pl )
+			if ( catherine.update.noFileIO ) then
+				netstream.Start( pl, "catherine.update.ResultCheck", LANG( pl, "System_UI_Update_InGameUpdate_NoFileIO" ) )
+			else
+				catherine.update.StartUpdateMode( pl )
+			end
 		else
 			netstream.Start( pl, "catherine.update.ResultCheck", LANG( pl, "System_Notify_PermissionError" ) )
 		end
