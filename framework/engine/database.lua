@@ -572,6 +572,13 @@ if ( SERVER ) then
 		return data
 	end
 	
+	function catherine.database.DeleteBackupFile( pl, data )
+		file.Delete( "catherine/database/backup/" .. data .. "/data.txt" )
+		file.Delete( "catherine/database/backup/" .. data .. "/info.txt" )
+		netstream.Start( nil, "catherine.database.SendData", catherine.database.GetBackupFilesData( ) )
+		netstream.Start( pl, "catherine.database.ResultDeleteBackupFile", true )
+	end
+	
 	function catherine.database.GetConfig( )
 		local config = file.Read( "catherine/database_config.cfg", "LUA" ) or nil
 		
@@ -772,6 +779,14 @@ if ( SERVER ) then
 		end
 	end )
 	
+	netstream.Hook( "catherine.database.DeleteBackupFile", function( pl, data )
+		if ( pl:IsSuperAdmin( ) ) then
+			catherine.database.DeleteBackupFile( pl, data )
+		else
+			netstream.Start( pl, "catherine.database.ResultDeleteBackupFile", LANG( pl, "System_Notify_PermissionError" ) )
+		end
+	end )
+	
 	netstream.Hook( "catherine.database.RequestDatabaseErrorData", function( pl, data )
 		if ( pl:IsSuperAdmin( ) ) then
 			netstream.Start( pl, "catherine.database.SendDatabaseErrorData", { } )
@@ -823,6 +838,18 @@ else
 				Derma_Message( LANG( "System_Notify_RestoreFinish" ), LANG( "Basic_UI_Notify" ), LANG( "Basic_UI_OK" ) )
 			else
 				Derma_Message( LANG( "System_Notify_RestoreError2", data ), LANG( "Basic_UI_Notify" ), LANG( "Basic_UI_OK" ) )
+			end
+		end
+	end )
+	
+	netstream.Hook( "catherine.database.ResultDeleteBackupFile", function( data )
+		if ( IsValid( catherine.vgui.databaseManager ) ) then
+			catherine.vgui.databaseManager.main.status = "none"
+			
+			if ( data == true ) then
+				Derma_Message( LANG( "System_Notify_DeleteFinish" ), LANG( "Basic_UI_Notify" ), LANG( "Basic_UI_OK" ) )
+			else
+				Derma_Message( LANG( "System_Notify_DeleteError", data ), LANG( "Basic_UI_Notify" ), LANG( "Basic_UI_OK" ) )
 			end
 		end
 	end )

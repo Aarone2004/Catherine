@@ -399,8 +399,8 @@ if ( SERVER ) then
 		return hook.Run( "GetCustomPlayerDefaultJumpPower", pl ) or catherine.configs.playerDefaultJumpPower
 	end
 	
-	function catherine.player.RagdollWork( pl, status, time )
-		if ( hook.Run( "PlayerShouldWorkRagdoll", pl, status, time ) == false ) then return end
+	function catherine.player.RagdollWork( pl, status, time, noForce )
+		if ( hook.Run( "PlayerShouldWorkRagdoll", pl, status, time, noForce ) == false ) then return end
 		
 		if ( status ) then
 			if ( IsValid( pl.CAT_ragdoll ) ) then
@@ -423,6 +423,7 @@ if ( SERVER ) then
 				
 				pl:SetNetVar( "ragdollIndex", nil )
 				pl:SetNetVar( "isRagdolled", nil )
+				pl:SetNetVar( "gettingup", nil )
 				
 				if ( !pl.CAT_isDeadFunc ) then
 					pl:SetPos( ent:GetPos( ) )
@@ -433,7 +434,17 @@ if ( SERVER ) then
 					pl:SetLocalVelocity( vector_origin )
 					
 					for k, v in pairs( ent.CAT_weaponsBuffer ) do
-						pl:Give( v, true )
+						local wep = pl:Give( v[ 1 ], true )
+						
+						if ( IsValid( wep ) ) then
+							wep:SetClip1( tonumber( v[ 2 ] or 0 ) )
+						else
+							wep = pl:GetWeapon( v[ 1 ] )
+							
+							if ( IsValid( wep ) ) then
+								wep:SetClip1( tonumber( v[ 2 ] or 0 ) )
+							end
+						end
 					end
 					
 					catherine.util.ScreenColorEffect( pl, nil, 0.5, 0.01 )
@@ -455,7 +466,10 @@ if ( SERVER ) then
 			local equippedWeapons = { }
 			
 			for k, v in pairs( pl:GetWeapons( ) ) do
-				equippedWeapons[ #equippedWeapons + 1 ] = v:GetClass( )
+				equippedWeapons[ #equippedWeapons + 1 ] = {
+					v:GetClass( ),
+					v:Clip1( )
+				}
 			end
 			
 			ent.CAT_weaponsBuffer = equippedWeapons
@@ -483,14 +497,20 @@ if ( SERVER ) then
 			if ( time ) then
 				local time2 = time
 				
-				pl:SetNetVar( "isForceRagdolled", true )
+				if ( !noForce ) then
+					pl:SetNetVar( "isForceRagdolled", true )
+				end
 				
 				local timerID2 = "Catherine.timer.player.RagdollWork." .. ent:EntIndex( )
 				
 				catherine.util.ProgressBar( pl, LANG( pl, "Player_Message_Ragdolled_01" ), time, function( )
 					catherine.util.ScreenColorEffect( pl, nil, 0.5, 0.01 )
 					catherine.player.RagdollWork( pl )
-					pl:SetNetVar( "isForceRagdolled", nil )
+					
+					if ( !noForce ) then
+						pl:SetNetVar( "isForceRagdolled", nil )
+					end
+					
 					timer.Remove( timerID1 )
 					timer.Remove( timerID2 )
 				end )
@@ -501,7 +521,11 @@ if ( SERVER ) then
 					if ( !pl:Alive( ) ) then
 						timer.Remove( timerID1 )
 						timer.Remove( timerID2 )
-						pl:SetNetVar( "isForceRagdolled", nil )
+						
+						if ( !noForce ) then
+							pl:SetNetVar( "isForceRagdolled", nil )
+						end
+						
 						return
 					end
 					
@@ -518,11 +542,17 @@ if ( SERVER ) then
 							
 							return
 						elseif ( ragdoll.CAT_paused ) then
+							pl:SetNetVar( "gettingup", nil )
+							
 							if ( time2 > 0 ) then
 								catherine.util.ProgressBar( pl, LANG( pl, "Player_Message_Ragdolled_01" ), time2, function( )
 									catherine.util.ScreenColorEffect( pl, nil, 0.5, 0.01 )
 									catherine.player.RagdollWork( pl )
-									pl:SetNetVar( "isForceRagdolled", nil )
+									
+									if ( !noForce ) then
+										pl:SetNetVar( "isForceRagdolled", nil )
+									end
+									
 									timer.Remove( timerID1 )
 									timer.Remove( timerID2 )
 								end )
@@ -534,7 +564,11 @@ if ( SERVER ) then
 								catherine.util.ProgressBar( pl, false )
 								catherine.util.ScreenColorEffect( pl, nil, 0.5, 0.01 )
 								catherine.player.RagdollWork( pl )
-								pl:SetNetVar( "isForceRagdolled", nil )
+								
+								if ( !noForce ) then
+									pl:SetNetVar( "isForceRagdolled", nil )
+								end
+								
 								timer.Remove( timerID1 )
 								timer.Remove( timerID2 )
 							end
@@ -600,6 +634,7 @@ if ( SERVER ) then
 	META.CATSetArmor = META.CATSetArmor or META.SetArmor
 	META.CATSetUserGroup = META.CATSetUserGroup or META.SetUserGroup
 	META.CATLastHitGroup = META.CATLastHitGroup or META.LastHitGroup
+	META.CATStripWeapons = META.CATStripWeapons or META.StripWeapons
 	
 	function META:LastHitGroup( )
 		return pl.CAT_lastHitGroup or self:CATLastHitGroup( )
@@ -627,6 +662,12 @@ if ( SERVER ) then
 		self:CATSetArmor( armor )
 		
 		hook.Run( "PlayerArmorSet", self, armor, oldArmor )
+	end
+	
+	function META:StripWeapons( )
+		self:CATStripWeapons( )
+		
+		hook.Run( "PlayerStripWeapons", self )
 	end
 	
 	local ammoTypes = {
@@ -711,6 +752,126 @@ if ( SERVER ) then
 	
 	function META:IsInGod( )
 		return self.CAT_godMode
+	end
+	
+	// ULX의 레그돌 시스템 호환성 문제 해결
+	if ( ULib and ulx ) then
+		function ULib.spawn( player, bool )
+			player:Spawn()
+			
+			if bool and player.ULibSpawnInfo then
+				// local t = player.ULibSpawnInfo
+				// player:SetHealth( t.health )
+				// player:SetArmor( t.armor )
+				// timer.Simple( 0.1, function() doWeapons( player, t ) end ) // 레그돌 풀린 후 무기가 하나도 없는 문제를 해결합니다.
+				player.ULibSpawnInfo = nil
+			end
+		end
+		
+		function ulx.ragdoll( calling_ply, target_plys, should_unragdoll )
+			local affected_plys = {}
+			for i=1, #target_plys do
+				local v = target_plys[ i ]
+
+				if not should_unragdoll then
+					if ulx.getExclusive( v, calling_ply ) then
+						ULib.tsayError( calling_ply, ulx.getExclusive( v, calling_ply ), true )
+					elseif not v:Alive() then
+						ULib.tsayError( calling_ply, v:Nick() .. " is dead and cannot be ragdolled!", true )
+					else
+						if v:InVehicle() then
+							local vehicle = v:GetParent()
+							v:ExitVehicle()
+						end
+
+						ULib.getSpawnInfo( v ) -- Collect information so we can respawn them in the same state.
+
+						local ragdoll = ents.Create( "prop_ragdoll" )
+						ragdoll.ragdolledPly = v
+
+						ragdoll:SetPos( v:GetPos() )
+						local velocity = v:GetVelocity()
+						ragdoll:SetAngles( v:GetAngles() )
+						ragdoll:SetModel( v:GetModel() )
+						ragdoll:Spawn()
+						ragdoll:Activate()
+						
+						if ( IsValid( calling_ply.CAT_ragdoll ) ) then // 이미 레그돌이 있으면 실행합니다.
+							ragdoll:SetNoDraw( true ) // 레그돌을 안 보이게 합니다..
+							ragdoll:SetNotSolid( true ) // 레그돌을 안 잡히게 합니다..
+						end
+						
+						v:SetParent( ragdoll ) -- So their player ent will match up (position-wise) with where their ragdoll is.
+						-- Set velocity for each peice of the ragdoll
+						local j = 1
+						while true do -- Break inside
+							local phys_obj = ragdoll:GetPhysicsObjectNum( j )
+							if phys_obj then
+								phys_obj:SetVelocity( velocity )
+								j = j + 1
+							else
+								break
+							end
+						end
+
+						v:Spectate( OBS_MODE_CHASE )
+						v:SpectateEntity( ragdoll )
+						//v:StripWeapons() -- Otherwise they can still use the weapons.
+
+						ragdoll:DisallowDeleting( true, function( old, new )
+							v.ragdoll = new
+						end )
+						v:DisallowSpawning( true )
+
+						v.ragdoll = ragdoll
+						ulx.setExclusive( v, "ragdolled" )
+
+						table.insert( affected_plys, v )
+					end
+				elseif v.ragdoll then -- Only if they're ragdolled...
+					v:DisallowSpawning( false )
+					v:SetParent()
+
+					v:UnSpectate() -- Need this for DarkRP for some reason, works fine without it in sbox
+
+					local ragdoll = v.ragdoll
+					v.ragdoll = nil -- Gotta do this before spawn or our hook catches it
+
+					if not ragdoll:IsValid() then -- Something must have removed it, just spawn
+						ULib.spawn( v, true )
+
+					else
+						local pos = ragdoll:GetPos()
+						pos.z = pos.z + 10 -- So they don't end up in the ground
+
+						ULib.spawn( v, true )
+						v:SetPos( pos )
+						//v:SetVelocity( ragdoll:GetVelocity() )
+						local yaw = ragdoll:GetAngles().yaw
+						v:SetAngles( Angle( 0, yaw, 0 ) )
+						ragdoll:DisallowDeleting( false )
+						ragdoll:Remove()
+					end
+
+					ulx.clearExclusive( v )
+
+					table.insert( affected_plys, v )
+				end
+			end
+
+			if not should_unragdoll then
+				ulx.fancyLogAdmin( calling_ply, "#A ragdolled #T", affected_plys )
+			else
+				ulx.fancyLogAdmin( calling_ply, "#A unragdolled #T", affected_plys )
+			end
+		end
+		
+		local ragdoll = ulx.command( CATEGORY_NAME, "ulx ragdoll", ulx.ragdoll, "!ragdoll" )
+		ragdoll:addParam{ type=ULib.cmds.PlayersArg }
+		ragdoll:addParam{ type=ULib.cmds.BoolArg, invisible=true }
+		ragdoll:defaultAccess( ULib.ACCESS_ADMIN )
+		ragdoll:help( "ragdolls target(s)." )
+		ragdoll:setOpposite( "ulx unragdoll", {_, _, true}, "!unragdoll" )
 	end
 	
 	netstream.Hook( "catherine.player.Initialize.IsRetry", function( pl )
@@ -806,7 +967,7 @@ function META:IsChatTyping( )
 end
 
 function META:IsRunning( )
-	return twoD( velo( self ) ) >= ( catherine.configs.playerDefaultRunSpeed - 5 )
+	return self:KeyDown( IN_SPEED )
 end
 
 function META:IsStuck( )

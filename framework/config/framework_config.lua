@@ -84,6 +84,7 @@ if ( SERVER ) then
 	catherine.configs.voiceAllow = false --[[ Allow a Voice chat. ]]--
 	catherine.configs.voice3D = true --[[ Enabled the Voice 3D system. ]]--
 	catherine.configs.spawnTime = 120 --[[ Setting a Spawn time. ]]--
+	catherine.configs.nextFalloverTime = 30
 	catherine.configs.clearMap = true --[[ Enabled a Map Clear system. (Remove a map HL2 HP, Armor station and Vehicles(Chair) ) ]]--
 	catherine.configs.doorBreach = true --[[ Enabled a Door Breach system. (Shoot the door handle to open) ]]--
 	

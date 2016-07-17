@@ -89,17 +89,33 @@ function PANEL:InstallModules( )
 			local data = catherine.net.GetNetGlobalVar( "cat_updateData", { } )
 			
 			if ( data.version != catherine.GetVersion( ) ) then
-				surface.SetDrawColor( 255, 255, 255, 255 )
-				surface.SetMaterial( foundNewMat )
-				surface.DrawTexturedRect( 10, h - 97, 16, 16 )
+				if ( !pnl.updateNow:IsVisible( ) ) then
+					pnl.updateNow:SetVisible( true )
+				end
 				
-				draw.SimpleText( LANG( "System_UI_Update_FoundNew" ), "catherine_normal15", 33, h - 90, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
+				if ( pnl.updateNow:IsVisible( ) ) then
+					surface.SetDrawColor( 255, 255, 255, 255 )
+					surface.SetMaterial( foundNewMat )
+					surface.DrawTexturedRect( 10, h - 97, 16, 16 )
+					
+					draw.SimpleText( LANG( "System_UI_Update_FoundNew" ), "catherine_normal15", 33, h - 90, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
+				else
+					surface.SetDrawColor( 255, 255, 255, 255 )
+					surface.SetMaterial( foundNewMat )
+					surface.DrawTexturedRect( 10, h - 67, 16, 16 )
+					
+					draw.SimpleText( LANG( "System_UI_Update_FoundNew" ), "catherine_normal15", 33, h - 60, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
+				end
 			else
+				if ( pnl.updateNow:IsVisible( ) ) then
+					pnl.updateNow:SetVisible( false )
+				end
+			
 				surface.SetDrawColor( 255, 255, 255, 255 )
 				surface.SetMaterial( alreadyNewMat )
-				surface.DrawTexturedRect( 10, h - 97, 16, 16 )
+				surface.DrawTexturedRect( 10, h - 67, 16, 16 )
 				
-				draw.SimpleText( LANG( "System_UI_Update_AlreadyNew" ), "catherine_normal15", 33, h - 90, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
+				draw.SimpleText( LANG( "System_UI_Update_AlreadyNew" ), "catherine_normal15", 33, h - 60, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
 			end
 		end
 	end
@@ -169,17 +185,18 @@ function PANEL:InstallModules( )
 		draw.RoundedBox( 0, 0, 0, w, h, Color( 245, 245, 245, 255 ) )
 	end
 	
-	self.updatePanel.openLog = vgui.Create( "catherine.vgui.button", self.updatePanel )
-	self.updatePanel.openLog:SetSize( self.updatePanel.w - 15, 30 )
-	self.updatePanel.openLog:SetPos( self.updatePanel.w / 2 - self.updatePanel.openLog:GetWide( ) / 2, self.updatePanel.h - ( self.updatePanel.openLog:GetTall( ) * 2 ) - 15 )
-	self.updatePanel.openLog:SetStr( LANG( "System_UI_Update_OpenUpdateLog" ) )
-	self.updatePanel.openLog:SetStrFont( "catherine_normal15" )
-	self.updatePanel.openLog:SetStrColor( Color( 50, 50, 50, 255 ) )
-	self.updatePanel.openLog:SetGradientColor( Color( 255, 255, 255, 150 ) )
-	self.updatePanel.openLog.Click = function( pnl )
-		gui.OpenURL( "http://github.com/L7D/Catherine/commits" )
+	self.updatePanel.updateNow = vgui.Create( "catherine.vgui.button", self.updatePanel )
+	self.updatePanel.updateNow:SetVisible( false )
+	self.updatePanel.updateNow:SetSize( self.updatePanel.w - 15, 30 )
+	self.updatePanel.updateNow:SetPos( self.updatePanel.w / 2 - self.updatePanel.updateNow:GetWide( ) / 2, self.updatePanel.h - ( self.updatePanel.updateNow:GetTall( ) * 2 ) - 15 )
+	self.updatePanel.updateNow:SetStr( LANG( "System_UI_Update_UpdateNow" ) )
+	self.updatePanel.updateNow:SetStrFont( "catherine_normal20" )
+	self.updatePanel.updateNow:SetStrColor( Color( 0, 0, 0, 255 ) )
+	self.updatePanel.updateNow:SetGradientColor( Color( 0, 0, 0, 255 ) )
+	self.updatePanel.updateNow.Click = function( pnl )
+		self:InGameUpdateCheck( )
 	end
-	self.updatePanel.openLog.PaintBackground = function( pnl, w, h )
+	self.updatePanel.updateNow.PaintBackground = function( pnl, w, h )
 		draw.RoundedBox( 0, 0, 0, w, h, Color( 245, 245, 245, 255 ) )
 	end
 	
@@ -601,6 +618,8 @@ function PANEL:InstallModules( )
 			
 			draw.SimpleText( statusText, "catherine_normal20", 92 + tw, 22, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
 			
+			draw.SimpleText( LANG( "System_UI_DB_Manager_BackupFilesCount", #self.databaseManager.backupFilesData ), "catherine_normal20", w - ( w * 0.1 ) - 20, 23, Color( 50, 50, 50, 255 ), TEXT_ALIGN_RIGHT, 1 )
+			
 			if ( pnl.main.status != "none" ) then
 				if ( pnl.main:IsVisible( ) ) then
 					pnl.main:SetVisible( false )
@@ -659,13 +678,12 @@ function PANEL:InstallModules( )
 				return
 			end
 			
-			draw.SimpleText( LANG( "System_UI_DB_Manager_BackupFilesCount", #self.databaseManager.backupFilesData ), "catherine_normal20", w - 10, 15, Color( 50, 50, 50, 255 ), TEXT_ALIGN_RIGHT, 1 )
 			// draw.SimpleText( LANG( "System_UI_DB_Manager_AutoBackupStatus", "Disabled" ), "catherine_normal15", w - 10, h - 55, Color( 50, 50, 50, 255 ), TEXT_ALIGN_RIGHT, 1 )
 		end
 		
 		self.databaseManager.main.Lists = vgui.Create( "DPanelList", self.databaseManager.main )
-		self.databaseManager.main.Lists:SetPos( 10, 40 )
-		self.databaseManager.main.Lists:SetSize( self.databaseManager.main.w - 20, self.databaseManager.main.h - 110 )
+		self.databaseManager.main.Lists:SetPos( 10, 10 )
+		self.databaseManager.main.Lists:SetSize( self.databaseManager.main.w - 10, self.databaseManager.main.h - 60 )
 		self.databaseManager.main.Lists:SetSpacing( 3 )
 		self.databaseManager.main.Lists:EnableHorizontal( false )
 		self.databaseManager.main.Lists:EnableVerticalScrollbar( true )
@@ -677,29 +695,88 @@ function PANEL:InstallModules( )
 			
 			for k, v in SortedPairsByMemberValue( self.databaseManager.backupFilesData, "timeNumber" ) do
 				local fileTitle = LANG( "System_UI_DB_Manager_FileTitle", i )
+				local isDeleteMode = false
+				local nextCheck = CurTime( ) + 1
+				local isAnimation = false
+				local backgroundA = 0
 				
 				local panel = vgui.Create( "DButton" )
-				panel:SetSize( pnl.Lists:GetWide( ), 30 )
+				panel:SetSize( pnl.Lists:GetWide( ), 50 )
 				panel:SetText( "" )
 				panel.Paint = function( pnl2, w, h )
 					draw.RoundedBox( 0, 0, h - 1, w, 1, Color( 0, 0, 0, 90 ) )
 					
-					draw.SimpleText( fileTitle, "catherine_normal20", 10, h / 2, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
-					draw.SimpleText( v.timeString, "catherine_normal15", w - 10, h / 2, Color( 50, 50, 50, 255 ), TEXT_ALIGN_RIGHT, 1 )
-					draw.SimpleText( v.requester, "catherine_normal15", w / 2, h / 2, Color( 50, 50, 50, 255 ), 1, 1 )
-					
 					if ( pnl.selectedFile == v.name ) then
-						draw.RoundedBox( 0, 0, 0, w, h, Color( 0, 0, 0, 30 ) )
-					end
-				end
-				panel.DoClick = function( pnl2 )
-					if ( pnl.selectedFile == v.name ) then
-						pnl.selectedFile = nil
+						backgroundA = Lerp( 0.05, backgroundA, 40 )
+						draw.SimpleText( ">", "catherine_normal35", 10, h / 2, Color( 0, 0, 0, 255 ), TEXT_ALIGN_LEFT, 1 )
+						draw.SimpleText( fileTitle, "catherine_normal20", 40, 15, Color( 0, 0, 0, 255 ), TEXT_ALIGN_LEFT, 1 )
+						draw.SimpleText( v.requester .. " / " .. v.timeString, "catherine_normal15", 40, 35, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
 					else
-						pnl.selectedFile = v.name
+						backgroundA = Lerp( 0.05, backgroundA, 0 )
+						
+						draw.SimpleText( fileTitle, "catherine_normal20", 10, 15, Color( 0, 0, 0, 255 ), TEXT_ALIGN_LEFT, 1 )
+						draw.SimpleText( v.requester .. " / " .. v.timeString, "catherine_normal15", 10, 35, Color( 50, 50, 50, 255 ), TEXT_ALIGN_LEFT, 1 )
+					end
+					
+					if ( math.Round( backgroundA ) > 0 ) then
+						draw.RoundedBox( 0, 0, 0, w, h, Color( 0, 0, 0, backgroundA ) )
 					end
 				end
 				
+				local deleteButton = vgui.Create( "catherine.vgui.button", panel )
+				deleteButton:SetSize( 200, 25 )
+				deleteButton:SetPos( panel:GetWide( ), 13 )
+				deleteButton:SetStr( LANG( "System_UI_DB_Manager_DeleteTitle" ) )
+				deleteButton:SetStrFont( "catherine_normal20" )
+				deleteButton:SetStrColor( Color( 50, 50, 50, 255 ) )
+				deleteButton:SetGradientColor( Color( 255, 255, 255, 150 ) )
+				deleteButton.Click = function( pnl )
+					if ( self.databaseManager.main.status != "none" ) then return end
+					
+					Derma_Query( LANG( "System_Notify_DeleteQ" ), "", LANG( "Basic_UI_YES" ), function( )
+						if ( !IsValid( self.databaseManager ) ) then return end
+						
+						self.databaseManager.main.status = "delete"
+						
+						netstream.Start( "catherine.database.DeleteBackupFile", v.name )
+					end, LANG( "Basic_UI_NO" ), function( ) end )
+				end
+				deleteButton.PaintBackground = function( pnl, w, h )
+					draw.RoundedBox( 0, 0, 0, w, h, Color( 245, 150, 150, 255 ) )
+				end
+				
+				panel.DoClick = function( pnl2 )
+					if ( pnl.selectedFile == v.name ) then
+						pnl.selectedFile = nil
+						
+						isDeleteMode = false
+						isAnimation = true
+						deleteButton:MoveTo( panel:GetWide( ), 13, 0.2, 0, nil, function( )
+							isAnimation = false
+						end )
+					else
+						pnl.selectedFile = v.name
+						
+						isDeleteMode = true
+						isAnimation = true
+						deleteButton:MoveTo( panel:GetWide( ) - 220, 13, 0.2, 0, nil, function( )
+							isAnimation = false
+						end )
+					end
+				end
+				panel.Think = function( pnl2 )
+					if ( nextCheck <= CurTime( ) and isDeleteMode and pnl.selectedFile != v.name and !isAnimation ) then
+						isAnimation = true
+						isDeleteMode = false
+						
+						deleteButton:MoveTo( panel:GetWide( ), 13, 0.2, 0, nil, function( )
+							isAnimation = false
+						end )
+						
+						nextCheck = CurTime( ) + 1
+					end
+				end
+		
 				pnl.Lists:AddItem( panel )
 				i = i + 1
 			end
@@ -752,6 +829,12 @@ function PANEL:InstallModules( )
 			end
 		end
 		self.databaseManager.main.recover.PaintBackground = function( pnl, w, h )
+			if ( self.databaseManager.main.selectedFile ) then
+				pnl:SetAlpha( 255 )
+			else
+				pnl:SetAlpha( 100 )
+			end
+			
 			draw.RoundedBox( 0, 0, 0, w, h, Color( 245, 150, 150, 255 ) )
 		end
 		
@@ -1061,7 +1144,107 @@ function PANEL:InstallModules( )
 		draw.RoundedBox( 0, 0, 0, w, h, Color( 245, 200, 200, 255 ) )
 	end
 	
+	timer.Simple( firstMenuDelta, function( )
+		if ( IsValid( self ) ) then
+			self:InGameUpdateCheck( )
+		end
+	end )
+	
 	self.moduleInstalled = true
+end
+
+function PANEL:InGameUpdateCheck( )
+	local data = catherine.net.GetNetGlobalVar( "cat_updateData", { } )
+	
+	if ( data.version == catherine.GetVersion( ) ) then
+		return
+	end
+	
+	if ( IsValid( self.inGameUpdateNotify ) ) then
+		return
+	end
+	
+	self.inGameUpdateNotify = vgui.Create( "DPanel", self )
+	
+	self.inGameUpdateNotify.w, self.inGameUpdateNotify.h = self.w * 0.5, self.h * 0.5
+	self.inGameUpdateNotify.x, self.inGameUpdateNotify.y = self.w / 2 - self.inGameUpdateNotify.w / 2, self.h / 2 - self.inGameUpdateNotify.h / 2
+	
+	self.inGameUpdateNotify:SetSize( self.inGameUpdateNotify.w, self.inGameUpdateNotify.h )
+	self.inGameUpdateNotify:SetPos( self.inGameUpdateNotify.x, self.h )
+	self.inGameUpdateNotify:MoveTo( self.inGameUpdateNotify.x, self.h / 2 - self.inGameUpdateNotify.h / 2, 0.2, 0 )
+	
+	self.inGameUpdateNotify.Paint = function( pnl, w, h )
+		draw.RoundedBox( 0, 0, 0, w, h, Color( 255, 255, 255, 200 ) )
+		
+		surface.SetDrawColor( 0, 0, 0, 255 )
+		surface.DrawOutlinedRect( 0, 0, w, h )
+		
+		draw.RoundedBox( 0, 0, 30, w, 1, Color( 0, 0, 0, 255 ) )
+		
+		draw.SimpleText( LANG( "System_UI_Update_InGameUpdate_Title" ), "catherine_normal20", w / 2, 15, Color( 0, 0, 0, 255 ), 1, 1 )
+		
+		local wrapTexts = catherine.util.GetWrapTextData( LANG( "System_UI_Update_InGameUpdate_Desc" ), w - 80, "catherine_normal20" )
+		
+		if ( #wrapTexts == 1 ) then
+			draw.SimpleText( wrapTexts[ 1 ], "catherine_normal20", 10, 50, Color( 0, 0, 0, 255 ), TEXT_ALIGN_LEFT, 1 )
+		else
+			local textY = 50
+			
+			for k, v in pairs( wrapTexts ) do
+				draw.SimpleText( v, "catherine_normal20", 10, textY, Color( 0, 0, 0, 255 ), TEXT_ALIGN_LEFT, 1 )
+				
+				textY = textY + 30
+			end
+		end
+		
+		draw.SimpleText( LANG( "System_UI_Update_InGameUpdate_Desc2" ), "catherine_normal25", w / 2, h * 0.8, Color( 0, 0, 0, 255 ), 1, 1 )
+	end
+	
+	self.inGameUpdateNotify.accept = vgui.Create( "catherine.vgui.button", self.inGameUpdateNotify )
+	self.inGameUpdateNotify.accept:SetPos( 10, self.inGameUpdateNotify.h - 35 )
+	self.inGameUpdateNotify.accept:SetSize( self.inGameUpdateNotify.w / 2 - 20, 25 )
+	self.inGameUpdateNotify.accept:SetStr( LANG( "Basic_UI_YES" ) )
+	self.inGameUpdateNotify.accept:SetStrColor( Color( 0, 0, 0, 255 ) )
+	self.inGameUpdateNotify.accept:SetGradientColor( Color( 0, 255, 0, 255 ) )
+	self.inGameUpdateNotify.accept.Click = function( )
+		local data = catherine.net.GetNetGlobalVar( "cat_updateData", { } )
+		
+		if ( data.version != catherine.GetVersion( ) ) then
+			Derma_Query( LANG( "System_UI_Update_UpdateNow_Q1" ), "", LANG( "Basic_UI_YES" ), function( )
+				Derma_Query( LANG( "System_UI_Update_UpdateNow_Q2" ), "", LANG( "Basic_UI_YES" ), function( )
+					netstream.Start( "catherine.update.CURun" )
+				end, LANG( "Basic_UI_NO" ), function( ) end )
+			end, LANG( "Basic_UI_NO" ), function( ) end )
+		else
+			if ( self.inGameUpdateNotify.closing ) then return end
+			
+			self.inGameUpdateNotify.closing = true
+			
+			self.inGameUpdateNotify:MoveTo( self.inGameUpdateNotify.x, self.h, 0.2, 0, nil, function( )
+				self.inGameUpdateNotify:Remove( )
+				self.inGameUpdateNotify = nil
+				
+				Derma_Message( LANG( "System_UI_Update_AlreadyNew", data ), LANG( "Basic_UI_Notify" ), LANG( "Basic_UI_OK" ) )
+			end )
+		end
+	end
+	
+	self.inGameUpdateNotify.close = vgui.Create( "catherine.vgui.button", self.inGameUpdateNotify )
+	self.inGameUpdateNotify.close:SetPos( self.inGameUpdateNotify.w / 2, self.inGameUpdateNotify.h - 35 )
+	self.inGameUpdateNotify.close:SetSize( self.inGameUpdateNotify.w / 2 - 20, 25 )
+	self.inGameUpdateNotify.close:SetStr( LANG( "Basic_UI_NO" ) )
+	self.inGameUpdateNotify.close:SetStrColor( Color( 0, 0, 0, 255 ) )
+	self.inGameUpdateNotify.close:SetGradientColor( Color( 0, 0, 0, 255 ) )
+	self.inGameUpdateNotify.close.Click = function( )
+		if ( self.inGameUpdateNotify.closing ) then return end
+		
+		self.inGameUpdateNotify.closing = true
+		
+		self.inGameUpdateNotify:MoveTo( self.inGameUpdateNotify.x, self.h, 0.2, 0, nil, function( )
+			self.inGameUpdateNotify:Remove( )
+			self.inGameUpdateNotify = nil
+		end )
+	end
 end
 
 function PANEL:Paint( w, h )

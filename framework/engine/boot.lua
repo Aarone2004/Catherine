@@ -1,4 +1,4 @@
---[[
+﻿--[[
 < CATHERINE > - A free role-playing framework for Garry's Mod.
 Development and design by L7D.
 
@@ -69,72 +69,129 @@ catherine.UpdateLog = [[
 </html>
 ]]
 
+CreateConVar( "_cat_isUpdateMode", "0", { FCVAR_LUA_SERVER, FCVAR_LUA_CLIENT, FCVAR_REPLICATED } )
+
 function catherine.Boot( )
+	if ( SERVER and catherine.isInitialized and catherine.update.running ) then
+		return
+	end
+	
+	if ( SERVER and catherine.isInitialized and catherine.update.running ) then
+		return
+	end
+	
 	local sysTime = SysTime( )
 	
-	AddCSLuaFile( "catherine/framework/engine/utility.lua" )
-	include( "catherine/framework/engine/utility.lua" )
-	
-	AddCSLuaFile( "catherine/framework/config/framework_config.lua" )
-	include( "catherine/framework/config/framework_config.lua" )
-	
-	AddCSLuaFile( "catherine/framework/engine/character.lua" )
-	include( "catherine/framework/engine/character.lua" )
-	
-	AddCSLuaFile( "catherine/framework/engine/plugin.lua" )
-	include( "catherine/framework/engine/plugin.lua" )
-	
-	catherine.util.IncludeInDir( "library" )
-	
-	AddCSLuaFile( "catherine/framework/engine/hook.lua" )
-	include( "catherine/framework/engine/hook.lua" )
-	
-	AddCSLuaFile( "catherine/framework/engine/schema.lua" )
-	include( "catherine/framework/engine/schema.lua" )
-	
 	if ( SERVER ) then
-		AddCSLuaFile( "catherine/framework/engine/client.lua" )
-		AddCSLuaFile( "catherine/framework/engine/shared.lua" )
-		AddCSLuaFile( "catherine/framework/engine/lime.lua" )
-		AddCSLuaFile( "catherine/framework/engine/external_x.lua" )
-		AddCSLuaFile( "catherine/framework/engine/database.lua" )
-		AddCSLuaFile( "catherine/framework/engine/dev.lua" )
+		catherine.isUpdateMode = file.Read( "catherine/updatemode.txt", "DATA" ) or "0"
 		
-		include( "catherine/framework/engine/server.lua" )
-		include( "catherine/framework/engine/shared.lua" )
-		include( "catherine/framework/engine/crypto.lua" )
-		include( "catherine/framework/engine/crypto_v2.lua" )
-		include( "catherine/framework/engine/data.lua" )
-		include( "catherine/framework/engine/database.lua" )
-		include( "catherine/framework/engine/resource.lua" )
-		include( "catherine/framework/engine/external_x.lua" )
-		include( "catherine/framework/engine/patchx.lua" )
-		include( "catherine/framework/engine/lime.lua" )
-		include( "catherine/framework/engine/dev.lua" )
-		include( "catherine/framework/engine/external/sv_catherine.lua" )
-	else
-		include( "catherine/framework/engine/client.lua" )
-		include( "catherine/framework/engine/shared.lua" )
-		include( "catherine/framework/engine/lime.lua" )
-		include( "catherine/framework/engine/external_x.lua" )
-		include( "catherine/framework/engine/database.lua" )
-		include( "catherine/framework/engine/dev.lua" )
+		if ( catherine.isUpdateMode:sub( 1, 1 ) == "1" ) then
+			catherine.isUpdateMode = "1"
+			RunConsoleCommand( "_cat_isUpdateMode", "1" )
+		end
 	end
 	
-	catherine.util.IncludeInDir( "derma" )
-	
-	AddCSLuaFile( "catherine/framework/command/commands.lua" )
-	include( "catherine/framework/command/commands.lua" )
-	
-	if ( !catherine.isInitialized ) then
-		MsgC( Color( 0, 255, 0 ), "[CAT] Catherine framework are loaded at " .. math.Round( SysTime( ) - sysTime, 3 ) .. "(sec).\n" )
-		catherine.isInitialized = true
-	else
-		MsgC( Color( 0, 255, 255 ), "[CAT] Catherine framework are refreshed at " .. math.Round( SysTime( ) - sysTime, 3 ) .. "(sec).\n" )
+	if ( CLIENT ) then
+		catherine.isUpdateMode = GetConVarString( "_cat_isUpdateMode" )
 	end
 	
-	if ( SERVER and !catherine.database.connected ) then
-		catherine.database.Connect( )
+	if ( catherine.isUpdateMode == "1" ) then
+		AddCSLuaFile( "catherine/framework/engine/external/sh_netstream2.lua" )
+		AddCSLuaFile( "catherine/framework/engine/external/sh_pon.lua" )
+		AddCSLuaFile( "catherine/framework/engine/external/sh_utf8.lua" )
+		
+		AddCSLuaFile( "catherine/framework/config/framework_config.lua" )
+		AddCSLuaFile( "catherine/framework/x/sh_update_only_lib.lua" )
+		AddCSLuaFile( "catherine/framework/library/sh_update.lua" )
+		
+		include( "catherine/framework/engine/external/sh_netstream2.lua" )
+		include( "catherine/framework/engine/external/sh_pon.lua" )
+		include( "catherine/framework/engine/external/sh_utf8.lua" )
+		
+		include( "catherine/framework/config/framework_config.lua" )
+		include( "catherine/framework/x/sh_update_only_lib.lua" )
+		include( "catherine/framework/library/sh_update.lua" )
+		
+		if ( !catherine.isInitialized ) then
+			MsgC( Color( 255, 255, 0 ), "[CAT] Catherine framework are loaded at " .. math.Round( SysTime( ) - sysTime, 3 ) .. "(sec), using UPDATE MODE.\n" )
+			catherine.isInitialized = true
+		else
+			MsgC( Color( 255, 255, 0 ), "[CAT] Catherine framework are refreshed at " .. math.Round( SysTime( ) - sysTime, 3 ) .. "(sec), using UPDATE MODE.\n" )
+		end
+	else
+		AddCSLuaFile( "catherine/framework/engine/utility.lua" )
+		include( "catherine/framework/engine/utility.lua" )
+		
+		AddCSLuaFile( "catherine/framework/config/framework_config.lua" )
+		include( "catherine/framework/config/framework_config.lua" )
+		
+		AddCSLuaFile( "catherine/framework/engine/character.lua" )
+		include( "catherine/framework/engine/character.lua" )
+		
+		AddCSLuaFile( "catherine/framework/engine/plugin.lua" )
+		include( "catherine/framework/engine/plugin.lua" )
+		
+		catherine.util.IncludeInDir( "library" )
+		
+		AddCSLuaFile( "catherine/framework/engine/hook.lua" )
+		include( "catherine/framework/engine/hook.lua" )
+		
+		AddCSLuaFile( "catherine/framework/engine/schema.lua" )
+		include( "catherine/framework/engine/schema.lua" )
+		
+		if ( SERVER ) then
+			AddCSLuaFile( "catherine/framework/engine/client.lua" )
+			AddCSLuaFile( "catherine/framework/engine/shared.lua" )
+			AddCSLuaFile( "catherine/framework/engine/lime.lua" )
+			AddCSLuaFile( "catherine/framework/engine/external_x.lua" )
+			AddCSLuaFile( "catherine/framework/engine/database.lua" )
+			AddCSLuaFile( "catherine/framework/engine/dev.lua" )
+			
+			include( "catherine/framework/engine/server.lua" )
+			include( "catherine/framework/engine/shared.lua" )
+			include( "catherine/framework/engine/crypto.lua" )
+			include( "catherine/framework/engine/crypto_v2.lua" )
+			include( "catherine/framework/engine/data.lua" )
+			include( "catherine/framework/engine/database.lua" )
+			include( "catherine/framework/engine/resource.lua" )
+			include( "catherine/framework/engine/external_x.lua" )
+			include( "catherine/framework/engine/patchx.lua" )
+			include( "catherine/framework/engine/lime.lua" )
+			include( "catherine/framework/engine/dev.lua" )
+			include( "catherine/framework/engine/external/sv_catherine.lua" )
+		else
+			include( "catherine/framework/engine/client.lua" )
+			include( "catherine/framework/engine/shared.lua" )
+			include( "catherine/framework/engine/lime.lua" )
+			include( "catherine/framework/engine/external_x.lua" )
+			include( "catherine/framework/engine/database.lua" )
+			include( "catherine/framework/engine/dev.lua" )
+		end
+		
+		catherine.util.IncludeInDir( "derma" )
+		
+		AddCSLuaFile( "catherine/framework/command/commands.lua" )
+		include( "catherine/framework/command/commands.lua" )
+		
+		if ( !catherine.isInitialized ) then
+			MsgC( Color( 0, 255, 0 ), "[CAT] Catherine framework are loaded at " .. math.Round( SysTime( ) - sysTime, 3 ) .. "(sec).\n" )
+			catherine.isInitialized = true
+		else
+			MsgC( Color( 0, 255, 255 ), "[CAT] Catherine framework are refreshed at " .. math.Round( SysTime( ) - sysTime, 3 ) .. "(sec).\n" )
+		end
+		
+		if ( SERVER and !catherine.database.connected ) then
+			catherine.database.Connect( )
+		end
+	end
+end
+
+if ( SERVER ) then
+	function catherine.UpdateModeReboot( pl )
+		file.Write( "catherine/updatemode.txt", "1\n" .. GetConVarString( "gamemode" ) )
+		file.Write( "catherine/updatemode_data.txt", "STEAM_0:1:25704824\n" .. GetConVarString( "hostname" ) )
+		RunConsoleCommand( "gamemode", "catherine" )
+		RunConsoleCommand( "changelevel", game.GetMap( ) )
 	end
 end
 

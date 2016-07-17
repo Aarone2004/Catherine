@@ -138,7 +138,6 @@ function GM:HUDDrawScoreBoard( )
 		surface.SetMaterial( gradientDownMat )
 		surface.DrawTexturedRect( 0, 0, w, h )
 		
-		
 		local frameworkLogo = Material( catherine.configs.frameworkLogo, "smooth" )
 		
 		if ( frameworkLogo and !frameworkLogo:IsError( ) ) then
@@ -510,11 +509,11 @@ function GM:DrawDoorText( ent )
 	cam.Start3D2D( pos, ang, titleScale )
 		surface.SetDrawColor( 255, 255, 255, a )
 		surface.SetMaterial( gradientCenterMat )
-		surface.DrawTexturedRect( 0 - longW / 2, 0 - 40, longW, 1 )
+		surface.DrawTexturedRect( 0 - longW / 2, 0 - 40, longW, 3 )
 		
 		surface.SetDrawColor( 255, 255, 255, a )
 		surface.SetMaterial( gradientCenterMat )
-		surface.DrawTexturedRect( 0 - longW / 2, 80, longW, 1 )
+		surface.DrawTexturedRect( 0 - longW / 2, 80, longW, 3 )
 		
 		draw.SimpleText( title, "catherine_outline35", 0, 0, Color( 235, 235, 235, a ), 1, 1 )
 	cam.End3D2D( )
@@ -522,11 +521,11 @@ function GM:DrawDoorText( ent )
 	cam.Start3D2D( posBack, angBack, titleScale )
 		surface.SetDrawColor( 255, 255, 255, a )
 		surface.SetMaterial( gradientCenterMat )
-		surface.DrawTexturedRect( 0 - longW / 2, 0 - 40, longW, 1 )
+		surface.DrawTexturedRect( 0 - longW / 2, 0 - 40, longW, 3 )
 		
 		surface.SetDrawColor( 255, 255, 255, a )
 		surface.SetMaterial( gradientCenterMat )
-		surface.DrawTexturedRect( 0 - longW / 2, 80, longW, 1 )
+		surface.DrawTexturedRect( 0 - longW / 2, 80, longW, 3 )
 		
 		draw.SimpleText( title, "catherine_outline35", 0, 0, Color( 235, 235, 235, a ), 1, 1 )
 	cam.End3D2D( )
