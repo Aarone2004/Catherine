@@ -41,7 +41,7 @@ local credit_htmlValue = [[
 <body>
 	<div class="container" style="margin-top:15px;">
 	<div class="page-header">
-		<h1>Credit&nbsp&nbsp<small>The listed of Developing the Catherine or Helpers ...</small></h1>
+		<h1>Credit&nbsp&nbsp<small>The list of developers of Catherine (Or helpers) ...</small></h1>
 	</div>
 	
 	<div class="panel panel-primary">
@@ -105,7 +105,7 @@ LANGUAGE.data = {
 	[ "GlobalBan_UI_Title" ] = "Global Ban",
 	[ "GlobalBan_UI_Blank" ] = "Doesn't have user in Global Ban.",
 	[ "GlobalBan_UI_OpenProfile" ] = "Open the Steam Profile of this user.",
-	[ "GlobalBan_UI_NotUsing" ] = "This server doesn't using Global Ban service.",
+	[ "GlobalBan_UI_NotUsing" ] = "This server isn't using the Global Ban service.",
 	[ "GlobalBan_UI_Users" ] = "%s's users are blocked.",
 	
 	// News
@@ -114,7 +114,7 @@ LANGUAGE.data = {
 	[ "News_UI_SelectPage" ] = "Please select a page.",
 	
 	// Cash
-	[ "Cash_UI_HasStr" ] = "You have a %s.",
+	[ "Cash_UI_HasStr" ] = "You have %s.",
 	[ "Cash_UI_TargetHasStr" ] = "This player has %s.",
 	[ "Cash_Notify_Set" ] = "%s has set %s to %s",
 	[ "Cash_Notify_Give" ] = "%s has given %s to %s",
@@ -123,13 +123,13 @@ LANGUAGE.data = {
 	[ "Cash_Notify_NotValidAmount" ] = "Please enter a valid amount!",
 	[ "Cash_Notify_Salary" ] = "You have received %s from your salary.",
 	[ "Cash_Notify_Get" ] = "You are found %s.",
-	[ "Cash_Notify_Drop" ] = "You have been drop %s.",
+	[ "Cash_Notify_Drop" ] = "You have dropped %s.",
 	
 	// Character
 	[ "Character_UI_Title" ] = "Character",
 	[ "Character_UI_CreateCharStr" ] = "Create Character",
 	[ "Character_UI_LoadCharStr" ] = "Load Character",
-	[ "Character_UI_Close" ] = "Exit",
+	[ "Character_UI_Close" ] = "Return",
 	[ "Character_UI_ChangeLogStr" ] = "Update Log",
 	[ "Character_UI_ExitServerStr" ] = "Disconnect",
 	[ "Character_UI_BackStr" ] = "< Back",
@@ -140,25 +140,25 @@ LANGUAGE.data = {
 	[ "Character_UI_CharName" ] = "Name ...",
 	[ "Character_UI_CharDesc" ] = "Description ...",
 	[ "Character_UI_CharModel" ] = "Model ...",
-	[ "Character_UI_CharAtt" ] = "Character Attribute",
-	[ "Character_UI_CharFin" ] = "Character Information Verify",
+	[ "Character_UI_CharAtt" ] = "Character Attribute's",
+	[ "Character_UI_CharFin" ] = "Verifying Character Information...",
 	[ "Character_UI_NextStage" ] = "Next >",
 	[ "Character_UI_CREATE" ] = "Create a Character",
 	[ "Character_UI_MusicError" ] = "Failed to play background music! ( ERROR : %s )",
-	[ "Character_UI_Hint01" ] = "Catherine are supported multi-language system, Click the right top button for change the whatever language you can speak.",
-	[ "Character_UI_Hint01_Short" ] = "Can Change language",
+	[ "Character_UI_Hint01" ] = "Catherine supports a multi-language system, Click the right bottom corner button to change your preferred language.",
+	[ "Character_UI_Hint01_Short" ] = "You can change language.",
 	[ "Character_UI_CharFaction" ] = "Character Faction",
 	[ "Character_UI_FactionHaveAny" ] = "You do not have any factions.",
 	[ "Character_UI_SelectFaction" ] = "> Select a faction.",
-	[ "Character_UI_WaitAttribute" ] = "Choosing your Attribute ...",
-	[ "Character_UI_ThisisAttribute" ] = "This is your Attribute.",
+	[ "Character_UI_WaitAttribute" ] = "Choosing your Attributes, please wait...",
+	[ "Character_UI_ThisisAttribute" ] = "These are your attributes:",
 	[ "Character_UI_NoneAttribute" ] = "There is no selected Attribute.",
 	[ "Character_Notify_DeleteQ" ] = "Are you sure you want to delete this character?",
-	[ "Character_Notify_DeleteResult" ] = "You have been deleted this character.",
-	[ "Character_Notify_CreateQ" ] = "Are you sure want to create character?",
+	[ "Character_Notify_DeleteResult" ] = "You have deleted the character.",
+	[ "Character_Notify_CreateQ" ] = "Are you sure you want to create this character?",
 	[ "Character_Notify_ExitQ" ] = "Are you sure you want to disconnect from the server?",
-	[ "Character_Notify_CantDeleteUsing" ] = "You can not delete the character you are currently using!",
-	[ "Character_Notify_CantSwitchRagdolled" ] = "You can not switch characters while you are unconscious!",
+	[ "Character_Notify_CantDeleteUsing" ] = "You can't delete the character you are currently using!",
+	[ "Character_Notify_CantSwitchRagdolled" ] = "You can't switch characters while you are unconscious!",
 	[ "Character_Notify_IsNotValid" ] = "This character is not valid!",
 	[ "Character_Notify_CantUseThisFaction" ] = "You can't use this faction!",
 	[ "Character_Notify_IsNotValidFaction" ] = "This character's faction is not valid!",
@@ -185,7 +185,7 @@ LANGUAGE.data = {
 	[ "Character_Notify_SelectModel" ] = "Please select a character model!",
 	[ "Character_Notify_NameLimitHit" ] = "The character name must be at least " .. catherine.configs.characterNameMinLen .." characters long with a maximum of " .. catherine.configs.characterNameMaxLen .. " characters!",
 	[ "Character_Notify_DescLimitHit" ] = "The character description must be at least " .. catherine.configs.characterDescMinLen .." characters long with a maximum of " .. catherine.configs.characterDescMaxLen .. " characters!",
-	[ "Character_Notify_IsSelectingAttribute" ] = "Setting a Attribute, Please wait.",
+	[ "Character_Notify_IsSelectingAttribute" ] = "Selecting attributes, Please wait.",
 	[ "Character_Error_DBErrorBasic" ] = "Database error. [%s]",
 	
 	// Faction
@@ -195,14 +195,14 @@ LANGUAGE.data = {
 	[ "Faction_Notify_NotValid" ] = "%s is not a valid faction!",
 	[ "Faction_Notify_NotWhitelist" ] = "%s is not a valid whitelist!",
 	[ "Faction_Notify_AlreadyHas" ] = "%s already has the %s whitelist!",
-	[ "Faction_Notify_HasNot" ] = "%s does not have the %s whitelist!",
+	[ "Faction_Notify_HasNot" ] = "%s doesn't have the %s whitelist!",
 	[ "Faction_Notify_SelectPlease" ] = "Please select a faction!",
 	
 	// Accessory
 	[ "Accessory_Wear_ModelError" ] = "Model error.",
-	[ "Accessory_Wear_BoneExists" ] = "This bone already has accessory.",
-	[ "Accessory_Wear_BoneNotExists" ] = "This bone not has accessory.",
-	[ "Accessory_Wear_BoneIndexError" ] = "Bone data is not a valid.",
+	[ "Accessory_Wear_BoneExists" ] = "This bone already has an accessory.",
+	[ "Accessory_Wear_BoneNotExists" ] = "This bone doesn't have an accessory.",
+	[ "Accessory_Wear_BoneIndexError" ] = "Bone data is not valid.",
 	
 	// Flag
 	[ "Flag_Notify_Give" ] = "%s has given %s to %s",
@@ -218,10 +218,10 @@ LANGUAGE.data = {
 	[ "Flag_n_Desc" ] = "Access to the NPC spawning.",
 	[ "Flag_R_Desc" ] = "Access to the ragdoll spawning.",
 	[ "Flag_s_Desc" ] = "Access to the effect spawning.",
-	[ "Flag_i_Desc" ] = "Access to the Spawn, Gives item.",
+	[ "Flag_i_Desc" ] = "Access to the spawning of items.",
 	
 	[ "UnknownError" ] = "Unknown Error!",
-	[ "Basic_Notify_UnknownPlayer" ] = "You have not given a valid character name!",
+	[ "Basic_Notify_UnknownPlayer" ] = "You have not provided a valid character name!",
 	[ "Basic_Notify_CantFindCharacter" ] = "Can't found character!",
 	[ "Basic_Notify_NoArg" ] = "Please enter the %s argument!",
 	[ "Basic_Notify_InputText" ] = "Please enter the text!",
@@ -232,21 +232,21 @@ LANGUAGE.data = {
 	[ "System_UI_Close" ] = "Close",
 	[ "System_UI_Update_Title" ] = "Update",
 	[ "System_UI_Update_CoreVer" ] = "%s %s",
-	[ "System_UI_Update_FoundNew" ] = "This server not using latest version!",
-	[ "System_UI_Update_AlreadyNew" ] = "This server using latest version.",
+	[ "System_UI_Update_FoundNew" ] = "This server not using the latest version!",
+	[ "System_UI_Update_AlreadyNew" ] = "This server using the latest version.",
 	[ "System_UI_Update_CheckButton" ] = "Check Update",
 	[ "System_UI_Update_OpenUpdateLog" ] = "Update History",
 	[ "System_UI_Update_UpdateNow" ] = "< Update NOW >",
 	[ "System_UI_Update_CheckingUpdate" ] = "Checking update ...",
 	[ "System_UI_Update_InGameUpdate_Title" ] = "In-Game Update",
 	[ "System_UI_Update_InGameUpdate_Desc" ] = "In-game update is available.",
-	[ "System_UI_Update_InGameUpdate_Desc2" ] = "You are want to Update?",
-	[ "System_UI_Update_InGameUpdate_NoFileIO" ] = "File IO module failed to load, so Can't update.",
-	[ "System_UI_Update_UpdateNow_Q1" ] = "Are you sure update to the latest version of Catherine?, All your changes will be overwritten.",
+	[ "System_UI_Update_InGameUpdate_Desc2" ] = "Do you want to update?",
+	[ "System_UI_Update_InGameUpdate_NoFileIO" ] = "File IO module failed to load, so Catherine can't update. (You can try updating manually)",
+	[ "System_UI_Update_UpdateNow_Q1" ] = "Are you sure update to the latest version of Catherine?, All of your changes will be overwritten.",
 	[ "System_UI_Update_UpdateNow_Q2" ] = "Are you sure you want to update to the latest version?",
-	[ "System_Notify_NewVersionUpdateNeed" ] = "Released a new version for Catherine, recommend update.",
-	[ "System_Notify_Update_NextTime" ] = "Too often unable to check the version, try again later!",
-	[ "System_Notify_UpdateError" ] = "Failed to checking update. [%s]",
+	[ "System_Notify_NewVersionUpdateNeed" ] = "Released a new version for Catherine, it is recommended to update.",
+	[ "System_Notify_Update_NextTime" ] = "Unable to check the version too often, try again later.",
+	[ "System_Notify_UpdateError" ] = "Failed to check update. [%s]",
 	[ "System_UI_Plugin_Title" ] = "Plugin",
 	[ "System_UI_Plugin_ManagerButton" ] = "Plugin Management",
 	[ "System_UI_Plugin_ManagerAllPluginCount" ] = "Total Plugins %s's.",
@@ -277,19 +277,19 @@ LANGUAGE.data = {
 	[ "System_UI_DB_Manager_BackupButton" ] = "Backup Database",
 	[ "System_UI_DB_Manager_BackingupButton" ] = "Backing up Database ...",
 	[ "System_UI_DB_Manager_FileTitle" ] = "Backup file #%s",
-	[ "System_Notify_BackupQ" ] = "Are you want to backup Database?, Do not attempt other works in to the Backing progress.",
+	[ "System_Notify_BackupQ" ] = "Are you want to backup the database?, Do not attempt to do other works while the backup is in progress.",
 	[ "System_Notify_BackupFinish" ] = "Complete the Database backups.",
 	[ "System_Notify_BackupError" ] = "Failed to backup progress. [%s]",
 	[ "System_Notify_BackupError2" ] = "Occurred a Serious Database error",
 	[ "System_UI_DB_Manager_RestoreTitle" ] = "Restore",
-	[ "System_UI_DB_Manager_RestoreButton" ] = "Restore Database as Selected Date",
+	[ "System_UI_DB_Manager_RestoreButton" ] = "Restore Database to selected date",
 	[ "System_UI_DB_Manager_RestoringButton" ] = "Restoring Database ...",
-	[ "System_UI_DB_Manager_RestartServer" ] = "WARNING : Server is restart after a while :>",
+	[ "System_UI_DB_Manager_RestartServer" ] = "WARNING : Server will restart in a few mins. :>",
 	[ "System_Notify_RestoreFinish" ] = "Complete the Database restores.",
 	[ "System_Notify_DeleteQ" ] = "Are you sure want to delete this Database backup file?",
 	[ "System_Notify_DeleteFinish" ] = "Database backup file was deleted.",
 	[ "System_Notify_DeleteError" ] = "Failed to Delete progress. [%s]",
-	[ "System_Notify_RestoreQ" ] = "Are you want to restore Database as selected date?, All Database progress will be 'Restored', also automatic 'RESTART SERVER' after the restore.",
+	[ "System_Notify_RestoreQ" ] = "Are you want to restore Database to the selected date?, All Database progress will be 'Restored', also, there'll be an automatic server-restart after the restore.",
 	[ "System_Notify_RestoreQ2" ] = "Warning, If you do this work, you can't restore this, ARE YOU SURE?",
 	[ "System_Notify_RestoreError" ] = "Please select a Recovery Date.",
 	[ "System_Notify_RestoreError2" ] = "Failed to backup progress. [%s]",
@@ -297,7 +297,7 @@ LANGUAGE.data = {
 	[ "System_UI_DB_Manager_LogDeving" ] = "This feature has been developing ...",
 	[ "System_UI_DB_Manager_InitializeButton" ] = "< DATABASE INITIALIZE >",
 	[ "System_UI_DB_Manager_InitializeCount" ] = "Please click %s times more.",
-	[ "System_Notify_InitializeQ" ] = "Are you want to initialize Database?, All Database progress will be 'Initialized', also automatic 'RESTART SERVER' after the initialize.",
+	[ "System_Notify_InitializeQ" ] = "Are you want to initialize Database?, All Database progress will be 'Initialized', also, there'll be an automatic server-restart after the initialization.",
 	[ "System_Notify_PermissionError" ] = "Authentication Failure [00]",
 	[ "System_Notify_SecurityError" ] = "Denied by security policy [01]",
 	[ "System_UI_ExternalX_Title" ] = "Patch",
@@ -308,13 +308,13 @@ LANGUAGE.data = {
 	[ "System_UI_ExternalX_AlreadyNewPatch" ] = "Doesn't have new patch.",
 	[ "System_UI_ExternalX_InstallButton" ] = "Download / Install Patch",
 	[ "System_UI_ExternalX_Installing" ] = "Download and Installing the patch ...",
-	[ "System_UI_ExternalX_RestartServer" ] = "WARNING : Server is restart after a while :>",
-	[ "System_Notify_ExternalXUpdateNeed" ] = "Released a new patch for Catherine, if you want install open the System menu.",
+	[ "System_UI_ExternalX_RestartServer" ] = "WARNING : Server will restart in a few minutes. :>",
+	[ "System_Notify_ExternalXUpdateNeed" ] = "Released a new patch for Catherine, if you want to install it: open the System menu.",
 	[ "System_Notify_ExternalX_NextTime" ] = "Too often unable to check the patch, try again later!",
 	[ "System_Notify_ExternalXError" ] = "Failed to checking patch. [%s]",
 	[ "System_Notify_ExternalXError2" ] = "Failed to installing patch. [%s]",
-	[ "System_Notify_InstallQ" ] = "Are you want to install this patch?, automatic 'RESTART SERVER' after the install!",
-	[ "System_UI_Config_Title" ] = "Configs",
+	[ "System_Notify_InstallQ" ] = "Are you want to install this patch? There'll be an automatic server restart after the install!",
+	[ "System_UI_Config_Title" ] = "Configuration",
 	[ "System_UI_Config_BooleanTrue" ] = "Enabled",
 	[ "System_UI_Config_BooleanFalse" ] = "Disabled",
 	[ "System_UI_Info_Title" ] = "Information",
@@ -340,7 +340,7 @@ LANGUAGE.data = {
 	
 	// Business
 	[ "Business_UI_Title" ] = "Business",
-	[ "Business_UI_NoBuyable" ] = "You can not buy this!",
+	[ "Business_UI_NoBuyable" ] = "You can't buy this!",
 	[ "Business_UI_BuyButtonStr" ] = "Buy Item > %s",
 	[ "Business_UI_ShoppingCartStr" ] = "Shopping Cart",
 	[ "Business_UI_TotalStr" ] = "Total %s",
@@ -361,7 +361,7 @@ LANGUAGE.data = {
 	[ "Inventory_Notify_isPersistent" ] = "This item is persistent!",
 	
 	// Scoreboard
-	[ "Scoreboard_UI_Title" ] = "Player List",
+	[ "Scoreboard_UI_Title" ] = "Scoreboard",
 	[ "Scoreboard_UI_Author" ] = "Gamemode Author",
 	[ "Scoreboard_UI_UnknownDesc" ] = "You do not recognize this person.",
 	[ "Scoreboard_UI_PlayerDetailStr" ] = "Steam Name : %s\nSteam ID : %s\nPing : %s",
@@ -382,22 +382,22 @@ LANGUAGE.data = {
 	[ "Scoreboard_PlayerOption08_Str" ] = "Send PM to Player",
 	[ "Scoreboard_PlayerOption08_Q" ] = "Type a message.",
 	[ "Scoreboard_PlayerOption09_Str" ] = "BAN",
-	[ "Scoreboard_PlayerOption09_Q" ] = "What are you want to banned time?",
-	[ "Scoreboard_PlayerOption09_Q2" ] = "What are you want to ban reason?",
+	[ "Scoreboard_PlayerOption09_Q" ] = "What are you want the banned time to be?",
+	[ "Scoreboard_PlayerOption09_Q2" ] = "What's the ban reason?",
 	
 	// Help
 	[ "Help_UI_Title" ] = "Help",
 	[ "Help_UI_DefPageTitle" ] = "Welcome.",
 	[ "Help_UI_DefPageDesc" ] = "Press and look at page if you want.",
 	[ "Help_Category_Flag" ] = "Flag",
-	[ "Help_Desc_Flag" ] = "The listed of Flags ...",
+	[ "Help_Desc_Flag" ] = "The list of flags ...",
 	[ "Help_Category_Credit" ] = "Credit",
 	[ "Help_HTMLValue_Credit" ] = credit_htmlValue,
 	[ "Help_Category_Changelog" ] = "Change log",
 	[ "Help_Category_Command" ] = "Command",
-	[ "Help_Desc_Command" ] = "The listed of Commands ...",
+	[ "Help_Desc_Command" ] = "The list of Commands ...",
 	[ "Help_Category_Plugin" ] = "Plugin",
-	[ "Help_Desc_Plugin" ] = "The listed of Plugins ...",
+	[ "Help_Desc_Plugin" ] = "The list of Plugins ...",
 	
 	// Plugin
 	[ "Plugin_Value_Author" ] = "Development and design by '%s'",
@@ -410,7 +410,7 @@ LANGUAGE.data = {
 	
 	// Storage
 	[ "Storage_UI_YourInv" ] = "Your Inventory",
-	[ "Storage_UI_StorageCash" ] = "This storage have a %s.",
+	[ "Storage_UI_StorageCash" ] = "This storage has a %s.",
 	[ "Storage_UI_PlayerCash" ] = "You have a %s.",
 	[ "Storage_UI_StorageNoHaveItem" ] = "This storage is empty.",
 	[ "Storage_UI_PlayerNoHaveItem" ] = "You do not have any items.",
@@ -418,11 +418,11 @@ LANGUAGE.data = {
 	[ "Storage_Notify_NoStorage" ] = "This entity is not a valid storage!",
 	[ "Storage_CMD_SetPWD" ] = "You are setting a password %s for this storage.",
 	[ "Storage_PWDQ" ] = "What is the password for this storage?",
-	[ "Storage_Notify_PWDError" ] = "The password is not a valid!",
+	[ "Storage_Notify_PWDError" ] = "The password is not valid!",
 	[ "Storage_OpenStr" ] = "Open",
 	
 	// Item SYSTEM
-	[ "Item_GiveCommand_Fin" ] = "You are gives %s's %s item to the %s.",
+	[ "Item_GiveCommand_Fin" ] = "You have given %s's %s item to %s.",
 	[ "Item_Notify_NoItemData" ] = "This is not an available item!",
 	
 	// Item Base
@@ -453,16 +453,16 @@ LANGUAGE.data = {
 	[ "Item_Desc_World_Wallet" ] = "%s in a small stack.",
 	[ "Item_FuncStr01_Wallet" ] = "Take %s",
 	[ "Item_FuncStr02_Wallet" ] = "Drop %s",
-	[ "Item_StoreQ_Wallet" ] = "How much %s world you like to store?",
-	[ "Item_GetQ_Wallet" ] = "How much %s world you like to get?",
+	[ "Item_StoreQ_Wallet" ] = "How much %s would you like to store?",
+	[ "Item_GetQ_Wallet" ] = "How much %s would you like to get?",
 	[ "Item_DropQ_Wallet" ] = "How much %s would you like to drop?",
 	
 	[ "Item_Notify01_ZT" ] = "This player is already tied!",
 	[ "Item_Notify02_ZT" ] = "You do not have Zip Tie!",
 	[ "Item_Notify03_ZT" ] = "You are tied!",
 	[ "Item_Notify04_ZT" ] = "This player is not tied!",
-	[ "Item_Message01_ZT" ] = "Tieing ...",
-	[ "Item_Message02_ZT" ] = "Untieing ...",
+	[ "Item_Message01_ZT" ] = "Tying ...",
+	[ "Item_Message02_ZT" ] = "Untying ...",
 	[ "Item_Message03_ZT" ] = "You are tied.",
 	
 	[ "Item_FuncStr01_Weapon" ] = "Equip",
@@ -486,15 +486,15 @@ LANGUAGE.data = {
 	[ "Command_LOOC_Error" ] = "You must wait %s more second(s) before being able to use LOOC.",
 	
 	// Player
-	[ "Player_Message_Dead_HUD" ] = "The person is dead.",
+	[ "Player_Message_Dead_HUD" ] = "This person is deceased.",
 	[ "Player_Message_Ragdolled_HUD" ] = "The person is unconscious.",
 	[ "Player_Message_Ragdolled_01" ] = "You are unconscious.",
-	[ "Player_Message_Dead_01" ] = "You are dead ...",
+	[ "Player_Message_Dead_01" ] = "You are deceased ...",
 	[ "Player_Message_GettingUp" ] = "You are regaining consciousness ...",
 	[ "Player_Message_AlreayGettingUp" ] = "You are already getting up!",
-	[ "Player_Message_AlreadyFallovered" ] = "You are already fallen over!",
-	[ "Player_Message_BlockFallover" ] = "You can be fallover %s(sec) after!",
-	[ "Player_Message_NotFallovered" ] = "You are not fallen over!",
+	[ "Player_Message_AlreadyFallovered" ] = "You have already fallen over!",
+	[ "Player_Message_BlockFallover" ] = "You can fallover after %s seconds!",
+	[ "Player_Message_NotFallovered" ] = "You are not fallover-ed!",
 	[ "Player_Message_HasNotPermission" ] = "You do not have permission!",
 	[ "Player_Message_UnTie" ] = "Press 'Use' to untie.",
 	[ "Player_Message_TiedBlock" ] = "You can not do this when tied.",
@@ -510,7 +510,7 @@ LANGUAGE.data = {
 	// Door
 	[ "Door_Notify_CMD_Locked" ] = "You have locked this door.",
 	[ "Door_Notify_CMD_UnLocked" ] = "You have unlocked this door.",
-	[ "Door_Notify_BuyQ" ] = "Are you sure you want to buy this door at %s?",
+	[ "Door_Notify_BuyQ" ] = "Are you sure you want to buy this door for %s?",
 	[ "Door_Notify_SellQ" ] = "Are you sure you want to sell this door?",
 	[ "Door_Message_Locking" ] = "Locking ...",
 	[ "Door_Message_UnLocking" ] = "Unlocking ...",
@@ -566,7 +566,7 @@ LANGUAGE.data = {
 	[ "Option_Str_CHAT_TIMESTAMP_Desc" ] = "Displays chat timestamp in the chat message.",
 	
 	[ "Option_Str_ADMIN_ESP_Name" ] = "Show Admin ESP",
-	[ "Option_Str_ADMIN_ESP_Desc" ] = "Only show the administrative ESP if in noclipping.",
+	[ "Option_Str_ADMIN_ESP_Desc" ] = "Only show the administrative ESP if noclipping.",
 	
 	[ "Option_Str_Always_ADMIN_ESP_Name" ] = "Always Show Admin ESP",
 	[ "Option_Str_Always_ADMIN_ESP_Desc" ] = "Always show the administrative ESP, even when not in noclip.",
@@ -594,12 +594,12 @@ LANGUAGE.data = {
 	
 	// Question
 	[ "Question_UIStr" ] = "Question",
-	[ "Question_KickMessage" ] = "Answer has a wrong!",
+	[ "Question_KickMessage" ] = "Answer is wrong!",
 	
 	[ "Question_UI_Continue" ] = "Continue",
 	[ "Question_UI_Disconnect" ] = "Disconnect",
 	[ "Question_Notify_DisconnectQ" ] = "Are you sure you want to disconnect from the server?",
-	[ "Question_Notify_ContinueQ" ] = "Are you sure you want to check this answers?, if your answers wrong you are kicked from this server!",
+	[ "Question_Notify_ContinueQ" ] = "Are you sure you want to check these answers?, if your answers are wrong you will be kicked from this server!",
 	
 	// Basic
 	[ "Basic_UI_ReqToServer" ] = "Requesting to Server ...",
@@ -626,7 +626,7 @@ LANGUAGE.data = {
 	[ "Basic_Info_Loading" ] = "Initializing the Catherine ...",
 	[ "Basic_Framework_Author" ] = "Catherine framework development and design by '%s'",
 	[ "Basic_Notify_BunnyHop" ] = "Do not Bunny-hop!",
-	[ "Basic_Notify_RestoreDatabaseKick" ] = "SORRY, You have been kicked from this server, because server are working Database restore.",
+	[ "Basic_Notify_RestoreDatabaseKick" ] = "SORRY! You have been kicked from this server, because server is doing a database restore. (automatic kick)",
 	[ "Basic_ItemESP_Name" ] = "ITEM",
 	[ "Basic_PopNotify_Title" ] = "Important Notifications",
 	[ "Basic_DermaUtil_MessageTitle" ] = "Notify",
@@ -644,7 +644,7 @@ LANGUAGE.data = {
 	[ "Command_PrintItems_Fin" ] = "Printed all item Datas on the Console.",
 	
 	// AntiHaX
-	[ "AntiHaX_KickMessageNotifyAdmin" ] = "%s/%s user are using the Cheat programes, So kicked the player.",
+	[ "AntiHaX_KickMessageNotifyAdmin" ] = "%s/%s user is using a lua hack, therefore, the player has been kicked.",
 	[ "AntiHaX_KickMessage" ] = "Sorry, you have been kicked for using cheats.",
 	[ "AntiHaX_KickMessage_TimeOut" ] = "Sorry, you have been kicked because the anti-cheat timed out.",
 	
