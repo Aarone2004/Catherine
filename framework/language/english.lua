@@ -19,10 +19,13 @@ along with Catherine.  If not, see <http://www.gnu.org/licenses/>.
 --[[
 	Syntax fixed by Dremek.
 	( http://steamcommunity.com/profiles/76561198052257272/ )
+	
+	
+	lambdawg was here
 ]]--
 local credit_htmlValue = [[
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -172,7 +175,7 @@ LANGUAGE.data = {
 	[ "Character_Notify_CharUnBan" ] = "%s has unbanned the character %s.",
 	[ "Character_Notify_CharSetBan" ] = "%s has changed the banned status for character %s. [%s]",
 	[ "Character_Notify_CantCharBan_UnBan" ] = "You can't ban / unban this character!",
-	[ "Character_Notify_SetName" ] = "%s has set the name of %s to %s.",
+	[ "Character_Notify_SetName" ] = "%s has set the name to %s from %s.",
 	[ "Character_Notify_SetNameError" ] = "Can't type # in the character name!",
 	[ "Character_Notify_SetNameError2" ] = "Character name is not a valid!",
 	[ "Character_Notify_SetDesc" ] = "%s has set the description of %s to %s.",
